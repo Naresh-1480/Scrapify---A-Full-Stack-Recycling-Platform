@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard - Scrapify</title>
+    <link rel="stylesheet" href="../css/seller.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="top-bar">
+        <div class="date-time">
+            <div id="current-date">Friday, March 21, 2025</div>
+            <div id="current-time">10:30 AM</div>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="user-login">Naresh-1480</span>
+            <div class="verification-badge verified">
+                <i class="fas fa-check-circle"></i>
+                Verified Seller
+            </div>
+        </div>
+    </div>
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="user-login">Naresh-1480</span>
+            <div class="verification-badge verified">
+                <i class="fas fa-check-circle"></i>
+                Verified Seller
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h1>SCRAPIFY</h1>
+            </div>
+            
+            <ul class="nav-links">
+                <li class="active" data-page="overview">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li data-page="sell">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Sell Scrap</span>
+                </li>
+                <li data-page="listings">
+                    <i class="fas fa-list"></i>
+                    <span>Manage Listings</span>
+                </li>
+                <li data-page="orders">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders & Transactions</span>
+                </li>
+                <li data-page="messages">
+                    <i class="fas fa-comments"></i>
+                    <span>Messages</span>
+                    <span class="badge">3</span>
+                </li>
+                <li data-page="analytics">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </li>
+                <li data-page="profile">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Profile & Settings</span>
+                </li>
+                <li data-page="help">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help & Support</span>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard Overview -->
+            <section id="overview" class="dashboard-section active">
+                <h1>Dashboard Overview</h1>
+                
+                <!-- Quick Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Listings</h3>
+                            <p class="stat-number">24</p>
+                            <span class="stat-change positive">+3 this week</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Sales</h3>
+                            <p class="stat-number">₹15,750</p>
+                            <span class="stat-change positive">+₹2,300 this month</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Pending Orders</h3>
+                            <p class="stat-number">5</p>
+                            <span class="stat-change neutral">2 new today</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Rating</h3>
+                            <p class="stat-number">4.8/5</p>
+                            <span class="stat-change positive">+0.2 this month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="activity-section">
+                    <h2>Recent Activity</h2>
+                    <div class="activity-list">
+                        <!-- Activity items will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Earnings Chart -->
+                <div class="earnings-section">
+                    <h2>Earnings Summary</h2>
+                    <div class="chart-container">
+                        <canvas id="earningsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Other sections will be added here -->
+        </main>
+
+        <!-- Notifications Panel -->
+        <aside class="notifications-panel">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <button class="mark-all-read">Mark all as read</button>
+            </div>
+            <div class="notifications-list">
+                <!-- Notifications will be dynamically added here -->
+            </div>
+        </aside>
+    </div>
+
+    <!-- Chat Popup -->
+    <div class="chat-popup" id="chatPopup">
+        <!-- Chat content will be dynamically added here -->
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loader hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/seller.js"></script>
+</body>
+</html>

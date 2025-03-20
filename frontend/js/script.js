@@ -20,6 +20,8 @@ navLinksItems.forEach(item => {
 document.addEventListener('DOMContentLoaded', () => {
     const loginButton = document.querySelector('.btn-login');
     const signupButton = document.querySelector('.btn-signup');
+    const signupbButton = document.querySelector('.signupb');
+    const getStartedButton = document.querySelector('.getstarted');
     
     if (loginButton) {
         loginButton.addEventListener('click', () => {
@@ -30,6 +32,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (signupButton) {
         signupButton.addEventListener('click', () => {
             window.location.href = 'signup.html';
+        });
+    }
+
+    if (signupbButton) {
+        signupbButton.addEventListener('click', () => {
+            window.location.href = 'signup.html';
+        });
+    }
+
+    if (getStartedButton) {
+        getStartedButton.addEventListener('click', () => {
+            // Check if user is logged in
+            if (isUserLoggedIn()) {
+                // User is logged in, redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                // User is not logged in, redirect to login page
+                window.location.href = 'login.html';
+            }
         });
     }
 });
