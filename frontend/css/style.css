@@ -88,8 +88,51 @@ body {
 }
 
 /* Hero Section */
+/* Additional styles for the modified hero section */
+.hero-centered {
+    justify-content: center;
+    text-align: center;
+    padding: 10rem 2rem 6rem;
+    background: linear-gradient(135deg, #f6f8fa 0%, #e9ecef 100%);
+}
+
+.hero-centered .hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero-centered h1 {
+    font-size: 3.8rem;
+    margin-bottom: 1.5rem;
+    color: var(--dark-color);
+    line-height: 1.2;
+}
+
+.hero-centered p {
+    font-size: 1.3rem;
+    color: var(--gray);
+    margin-bottom: 2.5rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-centered .hero-buttons {
+    justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-centered h1 {
+        font-size: 2.8rem;
+    }
+    
+    .hero-centered p {
+        font-size: 1.1rem;
+    }
+}
 .hero {
-    padding: 8rem 2rem 4rem;
+    padding: 8rem 7rem 4rem;
     background: linear-gradient(135deg, #f6f8fa 0%, #e9ecef 100%);
     display: flex;
     align-items: center;
@@ -120,7 +163,7 @@ body {
 
 /* How It Works Section */
 .how-it-works {
-    padding: 5rem 2rem;
+    padding: 5rem 7rem;
     background: var(--white);
 }
 
@@ -164,7 +207,7 @@ body {
 
 /* Features Section */
 .features {
-    padding: 5rem 2rem;
+    padding: 5rem 7rem;
     background: #f8f9fa;
 }
 
