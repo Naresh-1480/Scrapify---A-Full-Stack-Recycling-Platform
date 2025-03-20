@@ -16,6 +16,23 @@ navLinksItems.forEach(item => {
     });
 });
 
+// Login and Signup Button Click Handlers
+document.addEventListener('DOMContentLoaded', () => {
+    const loginButton = document.querySelector('.btn-login');
+    const signupButton = document.querySelector('.btn-signup');
+    
+    if (loginButton) {
+        loginButton.addEventListener('click', () => {
+            window.location.href = 'login.html';
+        });
+    }
+    
+    if (signupButton) {
+        signupButton.addEventListener('click', () => {
+            window.location.href = 'signup.html';
+        });
+    }
+});
 // Smooth Scroll
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
