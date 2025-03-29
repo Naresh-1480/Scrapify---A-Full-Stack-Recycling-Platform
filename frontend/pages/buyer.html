@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Dashboard | ScrapTrade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="buyer.css">
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div class="loader hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="logo">
+            <img src="logo.png" alt="ScrapTrade Logo">
+        </div>
+        <ul class="nav-links">
+            <li class="active" data-section="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </li>
+            <li data-section="browse">
+                <i class="fas fa-search"></i>
+                <span>Browse Scrap</span>
+            </li>
+            <li data-section="orders">
+                <i class="fas fa-file-invoice"></i>
+                <span>My Orders</span>
+                <span class="badge">3</span>
+            </li>
+            <li data-section="saved">
+                <i class="fas fa-star"></i>
+                <span>Saved Listings</span>
+            </li>
+            <li data-section="messages">
+                <i class="fas fa-envelope"></i>
+                <span>Messages</span>
+                <span class="badge">2</span>
+            </li>
+            <li data-section="payments">
+                <i class="fas fa-wallet"></i>
+                <span>Payments</span>
+            </li>
+            <li data-section="profile">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </li>
+            <li data-section="help">
+                <i class="fas fa-question-circle"></i>
+                <span>Help & Support</span>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <button class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="date-time">
+            <span id="current-date">March 30, 2025</span>
+            <span id="current-time">10:30 AM</span>
+        </div>
+        <div class="user-info">
+            <div class="verification-badge verified">
+                <i class="fas fa-check-circle"></i>
+                <span>Verified Buyer</span>
+            </div>
+            <span>John Doe</span>
+            <button class="notifications-toggle" id="notificationsToggle">
+                <i class="fas fa-bell"></i>
+                <span class="badge">5</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-panel minimized" id="notificationsPanel">
+        <div class="notifications-header">
+            <h3>Notifications</h3>
+            <button class="mark-all-read" id="markAllRead">Mark all as read</button>
+        </div>
+        <div class="notifications-list">
+            <div class="notification-item unread">
+                <div class="notification-content">
+                    <p>Your order <strong>#ORD8765</strong> has been shipped.</p>
+                    <button class="read-btn">Mark Read</button>
+                </div>
+                <small>Today, 9:45 AM</small>
+            </div>
+            <div class="notification-item unread">
+                <div class="notification-content">
+                    <p>Seller <strong>MetalMax</strong> replied to your message.</p>
+                    <button class="read-btn">Mark Read</button>
+                </div>
+                <small>Today, 8:30 AM</small>
+            </div>
+            <div class="notification-item unread">
+                <div class="notification-content">
+                    <p>Price drop on your saved item <strong>Copper Wire 5kg</strong>.</p>
+                    <button class="read-btn">Mark Read</button>
+                </div>
+                <small>Yesterday, 4:15 PM</small>
+            </div>
+            <div class="notification-item">
+                <div class="notification-content">
+                    <p>Your order <strong>#ORD8742</strong> has been delivered.</p>
+                </div>
+                <small>Mar 28, 2025</small>
+            </div>
+            <div class="notification-item">
+                <div class="notification-content">
+                    <p>Your payment for <strong>#ORD8742</strong> was successful.</p>
+                </div>
+                <small>Mar 27, 2025</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Dashboard Section -->
+        <div class="dashboard-section active" id="dashboardSection">
+            <h2>Dashboard</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Orders</h3>
+                        <div class="stat-number">12</div>
+                        <div class="stat-change positive">+2 this month</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Active Orders</h3>
+                        <div class="stat-number">3</div>
+                        <div class="stat-change neutral">1 ready to ship</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Saved Listings</h3>
+                        <div class="stat-number">8</div>
+                        <div class="stat-change positive">2 price drops</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Spent</h3>
+                        <div class="stat-number">$1,245</div>
+                        <div class="stat-change positive">Saved $125 this month</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ongoing-orders-section">
+                <h3>Ongoing Orders</h3>
+                <div class="orders-list">
+                    <div class="order-card">
+                        <div class="order-header">
+                            <h4>Order #ORD8765</h4>
+                            <span class="order-status shipped">Shipped</span>
+                        </div>
+                        <div class="order-details">
+                            <div class="order-info">
+                                <p><strong>Item:</strong> Aluminum Scrap (25kg)</p>
+                                <p><strong>Seller:</strong> MetalRecyclers Ltd.</p>
+                                <p><strong>Ordered:</strong> Mar 27, 2025</p>
+                                <p><strong>Expected Delivery:</strong> Apr 2, 2025</p>
+                            </div>
+                            <div class="order-price">
+                                <span>$175.00</span>
+                            </div>
+                        </div>
+                        <div class="order-actions">
+                            <button class="view-btn">Track Order</button>
+                            <button class="contact-btn">Contact Seller</button>
+                        </div>
+                    </div>
+                    <div class="order-card">
+                        <div class="order-header">
+                            <h4>Order #ORD8752</h4>
+                            <span class="order-status pending">Pending</span>
+                        </div>
+                        <div class="order-details">
+                            <div class="order-info">
+                                <p><strong>Item:</strong> Copper Wire (5kg)</p>
+                                <p><strong>Seller:</strong> CopperKing</p>
+                                <p><strong>Ordered:</strong> Mar 29, 2025</p>
+                            </div>
+                            <div class="order-price">
+                                <span>$215.00</span>
+                            </div>
+                        </div>
+                        <div class="order-actions">
+                            <button class="view-btn">Order Details</button>
+                            <button class="contact-btn">Contact Seller</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="latest-offers-section">
+                <h3>Latest Offers & Discounts</h3>
+                <div class="offers-grid">
+                    <div class="offer-card">
+                        <div class="offer-image">
+                            <img src="https://via.placeholder.com/300x200" alt="E-Waste Collection">
+                            <div class="offer-badge">15% OFF</div>
+                        </div>
+                        <div class="offer-details">
+                            <h4>E-Waste Collection Sale</h4>
+                            <p>Get 15% off on all electronic waste items this week!</p>
+                            <small>Expires in 3 days</small>
+                        </div>
+                        <button class="primary-btn">Browse Now</button>
+                    </div>
+                    <div class="offer-card">
+                        <div class="offer-image">
+                            <img src="https://via.placeholder.com/300x200" alt="Bulk Metal">
+                            <div class="offer-badge">BULK DEAL</div>
+                        </div>
+                        <div class="offer-details">
+                            <h4>Bulk Metal Purchase</h4>
+                            <p>Buy more than 50kg of any metal and get free shipping!</p>
+                            <small>Limited time offer</small>
+                        </div>
+                        <button class="primary-btn">Browse Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Browse Scrap Section -->
+        <div class="dashboard-section" id="browseSection">
+            <h2>Browse Scrap Listings</h2>
+            <div class="browse-filters">
+                <div class="form-group">
+                    <input type="text" placeholder="Search for scrap items..." class="search-input">
+                </div>
+                <div class="filters-container">
+                    <div class="form-group">
+                        <select id="categoryFilter">
+                            <option value="">All Categories</option>
+                            <option value="metal">Metal</option>
+                            <option value="plastic">Plastic</option>
+                            <option value="ewaste">E-Waste</option>
+                            <option value="paper">Paper</option>
+                            <option value="glass">Glass</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="priceFilter">
+                            <option value="">Any Price</option>
+                            <option value="0-50">$0 - $50</option>
+                            <option value="50-100">$50 - $100</option>
+                            <option value="100-200">$100 - $200</option>
+                            <option value="200+">$200+</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="locationFilter">
+                            <option value="">Any Location</option>
+                            <option value="local">Local Only</option>
+                            <option value="domestic">Domestic Shipping</option>
+                            <option value="international">International Shipping</option>
+                        </select>
+                    </div>
+                    <button class="filter-btn" id="applyFilters">Apply Filters</button>
+                </div>
+            </div>
+
+            <div class="scrap-listings">
+                <div class="listings-grid">
+                    <div class="listing-card">
+                        <div class="listing-image">
+                            <img src="https://via.placeholder.com/300x200" alt="Copper Wires">
+                            <div class="listing-category">Metal</div>
+                        </div>
+                        <div class="listing-details">
+                            <h3>Copper Wires (Grade A)</h3>
+                            <div class="listing-meta">
+                                <span><i class="fas fa-weight-hanging"></i> 10kg</span>
+                                <span><i class="fas fa-map-marker-alt"></i> New York</span>
+                            </div>
+                            <div class="listing-price">$35.00/kg</div>
+                            <div class="seller-info">
+                                <span><i class="fas fa-user"></i> CopperKing</span>
+                                <span class="seller-rating">
+                                    <i class="fas fa-star"></i> 4.8/5
+                                </span>
+                            </div>
+                        </div>
+                        <div class="listing-actions">
+                            <button class="save-btn"><i class="far fa-star"></i></button>
+                            <button class="view-btn">View Details</button>
+                            <button class="primary-btn">Add to Cart</button>
+                        </div>
+                    </div>
+
+                    <div class="listing-card">
+                        <div class="listing-image">
+                            <img src="https://via.placeholder.com/300x200" alt="Aluminum Scrap">
+                            <div class="listing-category">Metal</div>
+                        </div>
+                        <div class="listing-details">
+                            <h3>Aluminum Scrap (Mixed)</h3>
+                            <div class="listing-meta">
+                                <span><i class="fas fa-weight-hanging"></i> 25kg</span>
+                                <span><i class="fas fa-map-marker-alt"></i> Chicago</span>
+                            </div>
+                            <div class="listing-price">$7.50/kg</div>
+                            <div class="seller-info">
+                                <span><i class="fas fa-user"></i> MetalRecyclers</span>
+                                <span class="seller-rating">
+                                    <i class="fas fa-star"></i> 4.6/5
+                                </span>
+                            </div>
+                        </div>
+                        <div class="listing-actions">
+                            <button class="save-btn"><i class="far fa-star"></i></button>
+                            <button class="view-btn">View Details</button>
+                            <button class="primary-btn">Add to Cart</button>
+                        </div>
+                    </div>
+
+                    <div class="listing-card">
+                        <div class="listing-image">
+                            <img src="https://via.placeholder.com/300x200" alt="PC Motherboards">
+                            <div class="listing-category">E-Waste</div>
+                            <div class="listing-badge hot">HOT</div>
+                        </div>
+                        <div class="listing-details">
+                            <h3>PC Motherboards (Lot of 10)</h3>
+                            <div class="listing-meta">
+                                <span><i class="fas fa-weight-hanging"></i> 5kg</span>
+                                <span><i class="fas fa-map-marker-alt"></i> San Francisco</span>
+                            </div>
+                            <div class="listing-price">$85.00 <span class="original-price">$100.00</span></div>
+                            <div class="seller-info">
+                                <span><i class="fas fa-user"></i> TechRecycle</span>
+                                <span class="seller-rating">
+                                    <i class="fas fa-star"></i> 4.9/5
+                                </span>
+                            </div>
+                        </div>
+                        <div class="listing-actions">
+                            <button class="save-btn"><i class="far fa-star"></i></button>
+                            <button class="view-btn">View Details</button>
+                            <button class="primary-btn">Add to Cart</button>
+                        </div>
+                    </div>
+
+                    <div class="listing-card">
+                        <div class="listing-image">
+                            <img src="https://via.placeholder.com/300x200" alt="HDPE Plastic">
+                            <div class="listing-category">Plastic</div>
+                        </div>
+                        <div class="listing-details">
+                            <h3>HDPE Plastic (Clean)</h3>
+                            <div class="listing-meta">
+                                <span><i class="fas fa-weight-hanging"></i> 15kg</span>
+                                <span><i class="fas fa-map-marker-alt"></i> Boston</span>
+                            </div>
+                            <div class="listing-price">$3.25/kg</div>
+                            <div class="seller-info">
+                                <span><i class="fas fa-user"></i> PlasticRecycle</span>
+                                <span class="seller-rating">
+                                    <i class="fas fa-star"></i> 4.5/5
+                                </span>
+                            </div>
+                        </div>
+                        <div class="listing-actions">
+                            <button class="save-btn"><i class="far fa-star"></i></button>
+                            <button class="view-btn">View Details</button>
+                            <button class="primary-btn">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="pagination">
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Section -->
+        <div class="dashboard-section" id="ordersSection">
+            <h2>My Orders</h2>
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="pending">Pending Orders</button>
+                    <button class="tab-btn" data-tab="shipped">Shipped Orders</button>
+                    <button class="tab-btn" data-tab="completed">Completed Orders</button>
+                    <button class="tab-btn" data-tab="cancelled">Cancelled Orders</button>
+                </div>
+                <div class="tab-content active" id="pendingTab">
+                    <div class="orders-list">
+                        <div class="order-card">
+                            <div class="order-header">
+                                <h4>Order #ORD8752</h4>
+                                <span class="order-status pending">Pending</span>
+                            </div>
+                            <div class="order-details">
+                                <div class="order-info">
+                                    <p><strong>Item:</strong> Copper Wire (5kg)</p>
+                                    <p><strong>Seller:</strong> CopperKing</p>
+                                    <p><strong>Ordered:</strong> Mar 29, 2025</p>
+                                    <p><strong>Payment:</strong> Completed</p>
+                                </div>
+                                <div class="order-price">
+                                    <span>$215.00</span>
+                                </div>
+                            </div>
+                            <div class="order-timeline">
+                                <div class="timeline-step completed">
+                                    <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                                    <div class="step-text">Order Placed</div>
+                                </div>
+                                <div class="timeline-step completed">
+                                    <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                                    <div class="step-text">Payment Completed</div>
+                                </div>
+                                <div class="timeline-step current">
+                                    <div class="step-icon"><i class="fas fa-hourglass-half"></i></div>
+                                    <div class="step-text">Awaiting Confirmation</div>
+                                </div>
+                                <div class="timeline-step">
+                                    <div class="step-icon"><i class="fas fa-truck"></i></div>
+                                    <div class="step-text">Shipped</div>
+                                </div>
+                                <div class="timeline-step">
+                                    <div class="step-icon"><i class="fas fa-box"></i></div>
+                                    <div class="step-text">Delivered</div>
+                                </div>
+                            </div>
+                            <div class="order-actions">
+                                <button class="view-btn">Order Details</button>
+                                <button class="contact-btn">Contact Seller</button>
+                                <button class="cancel-btn">Cancel Order</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="shippedTab">
+                    <div class="orders-list">
+                        <div class="order-card">
+                            <div class="order-header">
+                                <h4>Order #ORD8765</h4>
+                                <span class="order-status shipped">Shipped</span>
+                            </div>
+                            <div class="order-details">
+                                <div class="order-info">
+                                    <p><strong>Item:</strong> Aluminum Scrap (25kg)</p>
+                                    <p><strong>Seller:</strong> MetalRecyclers Ltd.</p>
+                                    <p><strong>Ordered:</strong> Mar 27, 2025</p>
+                                    <p><strong>Expected Delivery:</strong> Apr 2, 2025</p>
+                                </div>
+                                <div class="order-price">
+                                    <span>$175.00</span>
+                                </div>
+                            </div>
+                            <div class="order-timeline">
+                                <div class="timeline-step completed">
+                                    <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                                    <div class="step-text">Order Placed</div>
+                                </div>
+                                <div class="timeline-step completed">
+                                    <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                                    <div class="step-text">Payment Completed</div>
+                                </div>
+                                <div class="timeline-step completed">
+                                    <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                                    <div class="step-text">Seller Confirmed</div>
+                                </div>
+                                <div class="timeline-step current">
+                                    <div class="step-icon"><i class="fas fa-truck"></i></div>
+                                    <div class="step-text">Shipped</div>
+                                </div>
+                                <div class="timeline-step">
+                                    <div class="step-icon"><i class="fas fa-box"></i></div>
+                                    <div class="step-text">Delivered</div>
+                                </div>
+                            </div>
+                            <div class="order-actions">
+                                <button class="track-btn">Track Package</button>
+                                <button class="view-btn">Order Details</button>
+                                <button class="contact-btn">Contact Seller</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="completedTab">
+                    <div class="orders-list">
+                        <div class="order-card">
+                            <div class="order-header">
+                                <h4>Order #ORD8742</h4>
+                                <span class="order-status completed">Completed</span>
+                            </div>
+                            <div class="order-details">
+                                <div class="order-info">
+                                    <p><strong>Item:</strong> HDPE Plastic (20kg)</p>
+                                    <p><strong>Seller:</strong> PlasticRecycle</p>
+                                    <p><strong>Ordered:</strong> Mar 20, 2025</p>
+                                    <p><strong>Delivered:</strong> Mar 28, 2025</p>
+                                </div>
+                                <div class="order-price">
+                                    <span>$65.00</span>
+                                </div>
+                            </div>
+                            <div class="review-section">
+                                <h5>Your Review:</h5>
+                                <div class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </div>
+                                <p>"Good quality plastic, exactly as described. Delivery was prompt."</p>
+                            </div>
+                            <div class="order-actions">
+                                <button class="view-btn">Order Details</button>
+                                <button class="download-btn">Download Invoice</button>
+                                <button class="reorder-btn">Buy Again</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="cancelledTab">
+                    <div class="orders-list">
+                        <div class="order-card">
+                            <div class="order-header">
+                                <h4>Order #ORD8721</h4>
+                                <span class="order-status cancelled">Cancelled</span>
+                            </div>
+                            <div class="order-details">
+                                <div class="order-info">
+                                    <p><strong>Item:</strong> Steel Scrap (50kg)</p>
+                                    <p><strong>Seller:</strong> SteelWorks</p>
+                                    <p><strong>Ordered:</strong> Mar 15, 2025</p>
+                                    <p><strong>Cancelled:</strong> Mar 16, 2025</p>
+                                    <p><strong>Reason:</strong> Stock unavailable</p>
+                                </div>
+                                <div class="order-price">
+                                    <span>$225.00</span>
+                                    <div class="refund-status">Refunded</div>
+                                </div>
+                            </div>
+                            <div class="order-actions">
+                                <button class="view-btn">Order Details</button>
+                                <button class="reorder-btn">Try Again</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Listings Section -->
+        <div class="dashboard-section" id="savedSection">
+            <h2>Saved Listings</h2>
+            <div class="saved-listings">
+                <div class="listings-grid">
+                    <div class="listing-card">
+                        <div class="listing-image">
+                            <img src="https://via.placeholder.com/300x200" alt="Brass Scrap">
+                            <div class="listing-category">Metal</div>
+                            <div class="listing-badge price-drop">PRICE DROP</div>
+                        </div>
+                        <div class="listing-details">
+                            <h3>Brass Scrap (Mixed)</h3>
+                            <div class="listing-meta">
+                                <span><i class="fas fa-weight-hanging"></i> 15kg</span>
+                                <span><i class="fas fa-map-marker-alt"></i> Dallas</span>
+                            </div>
+                            <div class="listing-price">$22.50/kg <span class="original-price">$25.00/kg</span></div>
+                            <div class="seller-info">
+                                <span><i class="fas fa-user"></i> BrassTraders</span>
+                                <span class="seller-rating">
+                                    <i class="fas fa-star"></i> 4.7/5
+                                </span>
+                            </div>
+                        </div>
+                        <div class="listing-actions">
+                            <button class="save-btn active"><i class="fas fa-star"></i></button>
+                            <button class="view-btn">View Details</button>
+                            <button class="primary-btn">Add to Cart</button>
+                        </div>
+                    </div>
+
+                    <div class="listing-card">
+                        <div class="listing-image">
+                            <img src="https://via.placeholder.com/300x200" alt="Computer Parts">
+                            <div class="listing-category">E-Waste</div>
+                        </div>
+                        <div class="listing-details">
+                            <h3>Assorted Computer Parts</h3>
+                            <div class="listing-meta">
+                                <span><i class="fas fa-weight-hanging"></i> 8kg</span>
+                                <span><i class="fas fa-map-marker-alt"></i> Miami</span>
+                            </div>
+                            <div class="listing-price">$12.75/kg</div>
+                            <div class="seller-info">
+                                <span><i class="fas fa-user"></i> TechSalvage</span>
+                                <span class="seller-rating">
+                                    <i class="fas fa-star"></i> 4.3/5
+                                </span>
+                            </div>
+                        </div>
+                        <div class="listing-actions">
+                            <button class="save-btn active"><i class="fas fa-star"></i></button>
+                            <button class="view-btn">View Details</button>
+                            <button class="primary-btn">Add to Cart</button>
+                        </div>
+                    </div>
+
+                    <div class="listing-card">
+                        <div class="listing-image">
+                            <img src="https://via.placeholder.com/300x200" alt="Paper Waste">
+                            <div class="listing-category">Paper</div>
+                            <div class="listing-badge low-stock">LOW STOCK</div>
+                        </div>
+                        <div class="listing-details">
+                            <h3>Office Paper Waste (Sorted)</h3>
+                            <div class="listing-meta">
+                                <span><i class="fas fa-weight-hanging"></i> 50kg</span>
+                                <span><i class="fas fa-map-marker-alt"></i> Atlanta</span>
+                            </div>
+                            <!-- Continuing from where your HTML left off -->
+                            <div class="listing-price">$0.85/kg</div>
+                            <div class="seller-info">
+                                <span><i class="fas fa-user"></i> PaperWorks</span>
+                                <span class="seller-rating">
+                                    <i class="fas fa-star"></i> 4.2/5
+                                </span>
+                            </div>
+                        </div>
+                        <div class="listing-actions">
+                            <button class="save-btn active"><i class="fas fa-star"></i></button>
+                            <button class="view-btn">View Details</button>
+                            <button class="primary-btn">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Section -->
+        <div class="dashboard-section" id="messagesSection">
+            <h2>Messages</h2>
+            <div class="messages-container">
+                <div class="contacts-list">
+                    <div class="form-group">
+                        <input type="text" placeholder="Search contacts..." class="search-input">
+                    </div>
+                    <div class="contact-item active">
+                        <div class="contact-avatar">
+                            <img src="https://via.placeholder.com/40" alt="MetalMax">
+                        </div>
+                        <div class="contact-info">
+                            <h4>MetalMax</h4>
+                            <p>Sure, I can include a sample...</p>
+                        </div>
+                        <div class="contact-meta">
+                            <span class="time">10:15 AM</span>
+                            <span class="unread-badge">2</span>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-avatar">
+                            <img src="https://via.placeholder.com/40" alt="TechRecycle">
+                        </div>
+                        <div class="contact-info">
+                            <h4>TechRecycle</h4>
+                            <p>The motherboards are still available</p>
+                        </div>
+                        <div class="contact-meta">
+                            <span class="time">Yesterday</span>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-avatar">
+                            <img src="https://via.placeholder.com/40" alt="PlasticRecycle">
+                        </div>
+                        <div class="contact-info">
+                            <h4>PlasticRecycle</h4>
+                            <p>Thank you for your order!</p>
+                        </div>
+                        <div class="contact-meta">
+                            <span class="time">Mar 28</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="messages-content">
+                    <div class="chat-header">
+                        <div class="contact-info">
+                            <h3>MetalMax</h3>
+                            <span class="status online">Online</span>
+                        </div>
+                        <div class="chat-actions">
+                            <button class="view-order-btn">View Order</button>
+                            <button class="more-actions-btn"><i class="fas fa-ellipsis-v"></i></button>
+                        </div>
+                    </div>
+                    <div class="chat-messages">
+                        <div class="message-date">Today</div>
+                        <div class="message seller">
+                            <div class="message-content">
+                                <p>Good morning! I received your query about the copper wires. What exactly would you like to know?</p>
+                            </div>
+                            <div class="message-time">9:30 AM</div>
+                        </div>
+                        <div class="message buyer">
+                            <div class="message-content">
+                                <p>Hi there! I was wondering if you could tell me more about the purity of the copper wires? And do you offer any discounts for bulk orders?</p>
+                            </div>
+                            <div class="message-time">9:45 AM</div>
+                        </div>
+                        <div class="message seller">
+                            <div class="message-content">
+                                <p>The copper wires are 99.9% pure, and yes, I do offer discounts for bulk orders! For orders over 20kg, I can offer a 5% discount.</p>
+                            </div>
+                            <div class="message-time">10:00 AM</div>
+                        </div>
+                        <div class="message seller">
+                            <div class="message-content">
+                                <p>Sure, I can include a sample with your order if you'd like to test the quality before committing to a larger purchase.</p>
+                            </div>
+                            <div class="message-time">10:15 AM</div>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <textarea placeholder="Type your message..."></textarea>
+                        <div class="input-actions">
+                            <button class="attach-btn"><i class="fas fa-paperclip"></i></button>
+                            <button class="send-btn"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments Section -->
+        <div class="dashboard-section" id="paymentsSection">
+            <h2>Payments & Transactions</h2>
+            <div class="dashboard-cards">
+                <div class="payment-summary-card">
+                    <h3>Payment Summary</h3>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <h4>Total Spent</h4>
+                            <div class="stat-value">$1,245.00</div>
+                        </div>
+                        <div class="stat-item">
+                            <h4>This Month</h4>
+                            <div class="stat-value">$390.00</div>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Pending Payments</h4>
+                            <div class="stat-value">$215.00</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="payment-methods-card">
+                    <div class="card-header">
+                        <h3>Payment Methods</h3>
+                        <button class="add-method-btn"><i class="fas fa-plus"></i> Add New</button>
+                    </div>
+                    <div class="payment-methods">
+                        <div class="payment-method default">
+                            <div class="method-icon"><i class="fab fa-cc-visa"></i></div>
+                            <div class="method-details">
+                                <h4>Visa ending in 4242</h4>
+                                <p>Expires 05/28</p>
+                            </div>
+                            <div class="method-actions">
+                                <span class="default-badge">Default</span>
+                                <button class="edit-btn"><i class="fas fa-pen"></i></button>
+                            </div>
+                        </div>
+                        <div class="payment-method">
+                            <div class="method-icon"><i class="fab fa-cc-mastercard"></i></div>
+                            <div class="method-details">
+                                <h4>Mastercard ending in 8888</h4>
+                                <p>Expires 12/26</p>
+                            </div>
+                            <div class="method-actions">
+                                <button class="set-default-btn">Set as Default</button>
+                                <button class="edit-btn"><i class="fas fa-pen"></i></button>
+                            </div>
+                        </div>
+                        <div class="payment-method">
+                            <div class="method-icon"><i class="fab fa-paypal"></i></div>
+                            <div class="method-details">
+                                <h4>PayPal</h4>
+                                <p>john.doe@email.com</p>
+                            </div>
+                            <div class="method-actions">
+                                <button class="set-default-btn">Set as Default</button>
+                                <button class="edit-btn"><i class="fas fa-pen"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="transactions-section">
+                <div class="section-header">
+                    <h3>Recent Transactions</h3>
+                    <div class="filters">
+                        <select class="transaction-filter">
+                            <option value="all">All Transactions</option>
+                            <option value="completed">Completed</option>
+                            <option value="pending">Pending</option>
+                            <option value="refunded">Refunded</option>
+                        </select>
+                        <button class="download-btn"><i class="fas fa-download"></i> Export</button>
+                    </div>
+                </div>
+                <div class="transactions-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#TRX9876</td>
+                                <td>Mar 29, 2025</td>
+                                <td>Payment for Order #ORD8752</td>
+                                <td>$215.00</td>
+                                <td><span class="status pending">Pending</span></td>
+                                <td>
+                                    <button class="view-details-btn">Details</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>#TRX9870</td>
+                                <td>Mar 27, 2025</td>
+                                <td>Payment for Order #ORD8765</td>
+                                <td>$175.00</td>
+                                <td><span class="status completed">Completed</span></td>
+                                <td>
+                                    <button class="view-details-btn">Details</button>
+                                    <button class="download-invoice-btn"><i class="fas fa-file-invoice"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>#TRX9845</td>
+                                <td>Mar 20, 2025</td>
+                                <td>Payment for Order #ORD8742</td>
+                                <td>$65.00</td>
+                                <td><span class="status completed">Completed</span></td>
+                                <td>
+                                    <button class="view-details-btn">Details</button>
+                                    <button class="download-invoice-btn"><i class="fas fa-file-invoice"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>#TRX9820</td>
+                                <td>Mar 16, 2025</td>
+                                <td>Refund for Order #ORD8721</td>
+                                <td>$225.00</td>
+                                <td><span class="status refunded">Refunded</span></td>
+                                <td>
+                                    <button class="view-details-btn">Details</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="dashboard-section" id="profileSection">
+            <h2>Profile & Settings</h2>
+            <div class="profile-grid">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <h3>Personal Information</h3>
+                        <button class="edit-btn"><i class="fas fa-pen"></i> Edit</button>
+                    </div>
+                    <div class="profile-details">
+                        <div class="profile-avatar">
+                            <img src="https://via.placeholder.com/150" alt="John Doe">
+                            <button class="change-avatar-btn"><i class="fas fa-camera"></i></button>
+                        </div>
+                        <div class="profile-info">
+                            <div class="info-group">
+                                <label>Full Name</label>
+                                <p>John Doe</p>
+                            </div>
+                            <div class="info-group">
+                                <label>Email</label>
+                                <p>john.doe@email.com</p>
+                            </div>
+                            <div class="info-group">
+                                <label>Phone</label>
+                                <p>+1 (555) 123-4567</p>
+                            </div>
+                            <div class="info-group">
+                                <label>Location</label>
+                                <p>New York, NY</p>
+                            </div>
+                            <div class="info-group">
+                                <label>Member Since</label>
+                                <p>January 15, 2025</p>
+                            </div>
+                            <div class="verification-status">
+                                <i class="fas fa-check-circle"></i> Verified Buyer
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="address-card">
+                    <div class="card-header">
+                        <h3>Shipping Addresses</h3>
+                        <button class="add-address-btn"><i class="fas fa-plus"></i> Add New</button>
+                    </div>
+                    <div class="address-list">
+                        <div class="address-item default">
+                            <div class="address-details">
+                                <h4>Home Address</h4>
+                                <p>123 Main Street, Apt 4B</p>
+                                <p>New York, NY 10001</p>
+                                <p>United States</p>
+                            </div>
+                            <div class="address-actions">
+                                <span class="default-badge">Default</span>
+                                <button class="edit-btn"><i class="fas fa-pen"></i></button>
+                                <button class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="address-item">
+                            <div class="address-details">
+                                <h4>Office Address</h4>
+                                <p>456 Business Ave, Suite 200</p>
+                                <p>New York, NY 10002</p>
+                                <p>United States</p>
+                            </div>
+                            <div class="address-actions">
+                                <button class="set-default-btn">Set as Default</button>
+                                <button class="edit-btn"><i class="fas fa-pen"></i></button>
+                                <button class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3>Account Settings</h3>
+                    </div>
+                    <div class="settings-list">
+                        <div class="settings-item">
+                            <div class="settings-label">
+                                <h4>Change Password</h4>
+                                <p>Update your account password</p>
+                            </div>
+                            <button class="settings-btn">Change</button>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-label">
+                                <h4>Two-Factor Authentication</h4>
+                                <p>Add an extra layer of security</p>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="twoFactorToggle">
+                                <label for="twoFactorToggle"></label>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-label">
+                                <h4>Email Notifications</h4>
+                                <p>Get updates on your orders and offers</p>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="emailToggle" checked>
+                                <label for="emailToggle"></label>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-label">
+                                <h4>SMS Notifications</h4>
+                                <p>Receive text alerts for important updates</p>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="smsToggle">
+                                <label for="smsToggle"></label>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-label">
+                                <h4>Privacy Settings</h4>
+                                <p>Manage your data and privacy preferences</p>
+                            </div>
+                            <button class="settings-btn">Manage</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <h3>Buying Preferences</h3>
+                    </div>
+                    <div class="preferences-list">
+                        <div class="preference-item">
+                            <div class="preference-label">
+                                <h4>Preferred Scrap Categories</h4>
+                            </div>
+                            <div class="preference-tags">
+                                <span class="tag">Metal</span>
+                                <span class="tag">E-Waste</span>
+                                <span class="tag">Copper</span>
+                                <button class="add-tag-btn"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <div class="preference-item">
+                            <div class="preference-label">
+                                <h4>Price Alerts</h4>
+                                <p>Get notified when prices drop for your saved items</p>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="priceAlertToggle" checked>
+                                <label for="priceAlertToggle"></label>
+                            </div>
+                        </div>
+                        <div class="preference-item">
+                            <div class="preference-label">
+                                <h4>Default Payment Method</h4>
+                            </div>
+                            <select class="preference-select">
+                                <option value="visa">Visa ending in 4242</option>
+                                <option value="mastercard">Mastercard ending in 8888</option>
+                                <option value="paypal">PayPal</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help & Support Section -->
+        <div class="dashboard-section" id="helpSection">
+            <h2>Help & Support</h2>
+            <div class="help-grid">
+                <div class="faq-card">
+                    <h3>Frequently Asked Questions</h3>
+                    <div class="accordion">
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <h4>How do I track my order?</h4>
+                                <button class="accordion-toggle"><i class="fas fa-chevron-down"></i></button>
+                            </div>
+                            <div class="accordion-content">
+                                <p>You can track your order by going to the "My Orders" section and clicking on the "Track Order" button for the specific order you want to track. This will show you the current status and location of your shipment.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <h4>What payment methods are accepted?</h4>
+                                <button class="accordion-toggle"><i class="fas fa-chevron-down"></i></button>
+                            </div>
+                            <div class="accordion-content">
+                                <p>We accept various payment methods including credit/debit cards (Visa, Mastercard, American Express), PayPal, bank transfers, and in some regions, cash on delivery. You can manage your payment methods in the "Payments" section.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <h4>How do I return an item?</h4>
+                                <button class="accordion-toggle"><i class="fas fa-chevron-down"></i></button>
+                            </div>
+                            <div class="accordion-content">
+                                <p>If you need to return an item, please contact the seller directly through the messaging system within 7 days of receiving the order. Note that return policies may vary by seller, so it's important to check the seller's terms before purchasing.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <h4>How do I become a verified buyer?</h4>
+                                <button class="accordion-toggle"><i class="fas fa-chevron-down"></i></button>
+                            </div>
+                            <div class="accordion-content">
+                                <p>To become a verified buyer, you need to complete your profile information, verify your email and phone number, and successfully complete at least 3 purchases on the platform. Verification badges are typically awarded within 48 hours of meeting all requirements.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <h4>What should I do if I receive incorrect or damaged items?</h4>
+                                <button class="accordion-toggle"><i class="fas fa-chevron-down"></i></button>
+                            </div>
+                            <div class="accordion-content">
+                                <p>If you receive incorrect or damaged items, take photos of the package and its contents as soon as possible. Contact the seller through the messaging system and explain the issue with the photos attached. If you can't resolve the issue with the seller, you can open a dispute through our customer support.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="support-card">
+                    <h3>Contact Support</h3>
+                    <div class="support-options">
+                        <div class="support-option">
+                            <div class="option-icon"><i class="fas fa-headset"></i></div>
+                            <div class="option-details">
+                                <h4>Live Chat</h4>
+                                <p>Chat with our support team in real-time</p>
+                                <button class="support-btn">Start Chat</button>
+                            </div>
+                        </div>
+                        <div class="support-option">
+                            <div class="option-icon"><i class="fas fa-envelope"></i></div>
+                            <div class="option-details">
+                                <h4>Email Support</h4>
+                                <p>Send us an email and we'll respond within 24 hours</p>
+                                <button class="support-btn">Email Us</button>
+                            </div>
+                        </div>
+                        <div class="support-option">
+                            <div class="option-icon"><i class="fas fa-phone-alt"></i></div>
+                            <div class="option-details">
+                                <h4>Phone Support</h4>
+                                <p>Call us directly for urgent matters</p>
+                                <p class="support-phone">+1 (800) 123-4567</p>
+                                <p class="support-hours">Mon-Fri, 9AM-6PM EST</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="report-issue-card">
+                    <h3>Report an Issue</h3>
+                    <form class="report-form">
+                        <div class="form-group">
+                            <label for="issueType">Issue Type</label>
+                            <select id="issueType">
+                                <option value="" selected disabled>Select issue type</option>
+                                <option value="order">Order Problem</option>
+                                <option value="payment">Payment Issue</option>
+                                <option value="seller">Problem with Seller</option>
+                                <option value="quality">Quality Issue</option>
+                                <option value="delivery">Delivery Problem</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="orderNumber">Order Number (if applicable)</label>
+                            <input type="text" id="orderNumber" placeholder="e.g. ORD8765">
+                        </div>
+                        <div class="form-group">
+                            <label for="issueDescription">Describe the Issue</label>
+                            <textarea id="issueDescription" rows="5" placeholder="Please provide details about your issue..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Attach Files (optional)</label>
+                            <div class="file-upload">
+                                <input type="file" id="fileAttachment" multiple>
+                                <label for="fileAttachment"><i class="fas fa-paperclip"></i> Attach Files</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn">Submit Report</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Containers -->
+    <div class="modal-container" id="orderDetailsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Order Details</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-content">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="buyer.js"></script>
+</body>
+</html>
