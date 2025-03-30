@@ -1366,4 +1366,147 @@ function createDashboardContent() {
                 <h3>Top Categories</h3>
                 <div style="height: 250px; display: flex; align-items: center; justify-content: center;">
                     <div style="color: #777; font-style: italic;">Categories chart will display here</div>
-                </div
+                </div>
+            <div class="chart-card">
+                <h3>Revenue Distribution</h3>
+                <div style="height: 250px; display: flex; align-items: center; justify-content: center;">
+                    <div style="color: #777; font-style: italic;">Revenue chart will display here</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card performance-metrics" style="margin-top: 20px;">
+            <div class="table-header">
+                <h3 class="table-title">Key Performance Metrics</h3>
+                <select class="time-range">
+                    <option>Last 7 Days</option>
+                    <option>Last 30 Days</option>
+                    <option>Last 90 Days</option>
+                </select>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Change</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Average Transaction Value</td>
+                        <td>$425</td>
+                        <td><span style="color: var(--success-color)">↑ 12%</span></td>
+                        <td><span class="status approved">Good</span></td>
+                    </tr>
+                    <tr>
+                        <td>Listing Approval Rate</td>
+                        <td>85%</td>
+                        <td><span style="color: var(--success-color)">↑ 5%</span></td>
+                        <td><span class="status approved">Good</span></td>
+                    </tr>
+                    <tr>
+                        <td>Dispute Resolution Time</td>
+                        <td>2.3 days</td>
+                        <td><span style="color: var(--error-color)">↑ 0.5 days</span></td>
+                        <td><span class="status pending">Needs Improvement</span></td>
+                    </tr>
+                    <tr>
+                        <td>New User Registration</td>
+                        <td>38</td>
+                        <td><span style="color: var(--success-color)">↑ 15%</span></td>
+                        <td><span class="status approved">Good</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>`;
+    
+    return container;
+}
+
+// Initialize charts function (placeholder for future implementation)
+function initializeCharts() {
+    // This function would initialize any charts using a charting library
+    console.log('Charts initialization would go here');
+}
+
+// Add notification handling
+function handleNotifications() {
+    const notificationBell = document.querySelector('.notifications');
+    if (notificationBell) {
+        notificationBell.addEventListener('click', () => {
+            alert('Notification center would open here');
+            // Reset notification count
+            const badge = notificationBell.querySelector('.badge');
+            if (badge) {
+                badge.textContent = '0';
+            }
+        });
+    }
+}
+
+// Add search functionality
+function initializeSearch() {
+    const searchInput = document.querySelector('.search-bar input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            // Implement search functionality here
+            console.log('Searching for:', searchTerm);
+        });
+    }
+}
+
+// Initialize any time-based auto-refresh features
+function initializeAutoRefresh() {
+    // Auto-refresh activity feed every 5 minutes
+    setInterval(() => {
+        const activityFeed = document.querySelector('.activity-feed');
+        if (activityFeed) {
+            console.log('Activity feed would refresh here');
+        }
+    }, 300000); // 5 minutes
+}
+
+// Initialize responsive sidebar
+function initializeResponsiveSidebar() {
+    const menuItems = document.querySelectorAll('.menu-item');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    
+    // Handle hover effects for mobile view
+    if (window.innerWidth <= 768) {
+        menuItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                const text = item.querySelector('span').textContent;
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = text;
+                item.appendChild(tooltip);
+            });
+            
+            item.addEventListener('mouseleave', () => {
+                const tooltip = item.querySelector('.tooltip');
+                if (tooltip) {
+                    tooltip.remove();
+                }
+            });
+        });
+    }
+}
+
+// Initialize all dashboard features
+function initializeDashboard() {
+    initializeCharts();
+    handleNotifications();
+    initializeSearch();
+    initializeAutoRefresh();
+    initializeResponsiveSidebar();
+    
+    // Add any additional initialization here
+    console.log('Dashboard initialized successfully');
+}
+
+// Call initialization when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeDashboard);
