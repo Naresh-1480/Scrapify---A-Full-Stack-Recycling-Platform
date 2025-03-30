@@ -185,24 +185,6 @@ function markNotificationAsRead(id) {
     updateNotifications();
 }
 
-// Mobile Navigation Toggle
-function setupMobileNavigation() {
-    const topBar = document.querySelector('.top-bar');
-    if (!topBar) return;
-    
-    // Check if mobile menu button already exists
-    if (!topBar.querySelector('.mobile-menu-btn')) {
-        const mobileMenuBtn = document.createElement('button');
-        mobileMenuBtn.classList.add('mobile-menu-btn');
-        mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
-        topBar.prepend(mobileMenuBtn);
-
-        mobileMenuBtn.addEventListener('click', () => {
-            document.querySelector('.sidebar').classList.toggle('active');
-        });
-    }
-}
-
 // Logout Handler
 function setupLogoutHandler() {
     const logoutBtn = document.querySelector('.logout-btn');
@@ -847,25 +829,6 @@ function setupChatFunctionality() {
         chatMessages.appendChild(messageElement);
         chatMessages.scrollTop = chatMessages.scrollHeight;
         chatInput.value = '';
-    }
-}
-
-// Handle mobile responsiveness
-function handleMobileLayout() {
-    const screenWidth = window.innerWidth;
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main-content');
-    const notificationsPanel = document.querySelector('.notifications-panel');
-    
-    if (screenWidth < 768) {
-        sidebar.classList.add('mobile');
-        mainContent.classList.add('mobile');
-        if (notificationsPanel) {
-            notificationsPanel.classList.add('minimized');
-        }
-    } else {
-        sidebar.classList.remove('mobile');
-        mainContent.classList.remove('mobile');
     }
 }
 

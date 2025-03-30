@@ -123,22 +123,6 @@ body {
     white-space: nowrap;
 }
 
-/* Date and Time */
-.date-time {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    font-size: 0.9rem;
-}
-
-#current-date {
-    font-weight: 500;
-}
-
-#current-time {
-    color: var(--gray);
-}
-
 /* Empty Section Placeholder */
 .section-content {
     background: var(--white);
