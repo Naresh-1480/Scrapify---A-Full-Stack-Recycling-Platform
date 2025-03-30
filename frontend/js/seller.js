@@ -269,10 +269,6 @@ function createDashboardSections() {
                                     <input type="number" id="scrapQuantity" placeholder="Enter quantity" min="1" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="scrapPrice">Price (₹ per kg)</label>
-                                    <input type="number" id="scrapPrice" placeholder="Enter price" min="1" required>
-                                </div>
-                                <div class="form-group">
                                     <label for="scrapPhotos">Upload Photos</label>
                                     <input type="file" id="scrapPhotos" multiple accept="image/*">
                                 </div>

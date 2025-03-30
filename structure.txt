@@ -1,0 +1,36 @@
+📁 SCRAPIFY---A-FULL-STACK-RECYCLING
+├── 📁 backend
+│   ├── 📁 models
+│   │   └── 🟨 User.js
+│   ├── 📁 node_modules
+│   ├── 📁 routes
+│   │   └── 🟨 authRoutes.js
+│   ├── ⚙️ .env
+│   ├── 📦 package-lock.json
+│   ├── 📦 package.json
+│   └── 🟨 server.js
+├── 📁 frontend
+│   ├── 📁 assets
+│   ├── 📁 css
+│   │   ├── 🎨 admin.css
+│   │   ├── 🎨 buyer.css
+│   │   ├── 🎨 login.css
+│   │   ├── 🎨 seller.css
+│   │   ├── 🎨 signup.css
+│   │   └── 🎨 style.css
+│   ├── 📁 js
+│   │   ├── 🟨 admin.js
+│   │   ├── 🟨 auth.js
+│   │   ├── 🟨 buyer.js
+│   │   ├── 🟨 login.js
+│   │   ├── 🟨 script.js
+│   │   ├── 🟨 seller.js
+│   │   └── 🟨 signup.js
+│   ├── 📁 pages
+│   │   ├── 🌐 admin.html
+│   │   ├── 🌐 buyer.html
+│   │   ├── 🌐 index.html
+│   │   ├── 🌐 login.html
+│   │   ├── 🌐 seller.html
+│   │   └── 🌐 signup.html
+├── 📄 README.md
