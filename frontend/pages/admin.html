@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrap Marketplace Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Scrap Market</h2>
+            <p>Admin Panel</p>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-item active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-store"></i>
+                <span>Manage Sellers</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-shopping-bag"></i>
+                <span>Manage Buyers</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-box"></i>
+                <span>Scrap Listings</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Transactions</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Disputes</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Reports & Analytics</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search...">
+            </div>
+            <div class="user-info">
+                <div class="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </div>
+                <img src="/api/placeholder/80/80" alt="Admin">
+                <div>
+                    <p>John Smith</p>
+                    <small>Administrator</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Overview -->
+        <div class="dashboard-cards">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Users</h3>
+                    <div class="card-icon users-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="card-value">2,450</div>
+                <div class="card-label">Total Sellers & Buyers</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3>Pending Listings</h3>
+                    <div class="card-icon listings-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                </div>
+                <div class="card-value">18</div>
+                <div class="card-label">Awaiting Approval</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3>Revenue</h3>
+                    <div class="card-icon revenue-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+                <div class="card-value">$24,586</div>
+                <div class="card-label">Total Transactions</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3>Disputes</h3>
+                    <div class="card-icon disputes-icon">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                </div>
+                <div class="card-value">7</div>
+                <div class="card-label">Ongoing Issues</div>
+            </div>
+        </div>
+
+        <!-- Tables -->
+        <div class="tables-container">
+            <!-- Pending Listings Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3 class="table-title">Pending Scrap Listings</h3>
+                    <a href="#" class="view-all">View All</a>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Seller</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#SL1028</td>
+                            <td>Metal Scraps (Aluminum)</td>
+                            <td>MetalWorks Inc</td>
+                            <td>Metal</td>
+                            <td>$250/ton</td>
+                            <td><span class="status pending">Pending</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
+                                    <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#SL1027</td>
+                            <td>Electronic Waste Lot</td>
+                            <td>TechRecycle</td>
+                            <td>Electronics</td>
+                            <td>$320/lot</td>
+                            <td><span class="status pending">Pending</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
+                                    <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#SL1026</td>
+                            <td>Used Copper Wiring</td>
+                            <td>PowerSupply Co</td>
+                            <td>Metal</td>
+                            <td>$425/ton</td>
+                            <td><span class="status pending">Pending</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
+                                    <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#SL1025</td>
+                            <td>Plastic Scrap Bundle</td>
+                            <td>GreenRecycle</td>
+                            <td>Plastic</td>
+                            <td>$180/ton</td>
+                            <td><span class="status pending">Pending</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
+                                    <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3 class="table-title">Recent Activities</h3>
+                    <a href="#" class="view-all">View All</a>
+                </div>
+                <div class="activity-feed">
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background-color: rgba(57, 9, 188, 0.2); color: var(--primary-color);">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p class="activity-message"><strong>New Seller:</strong> Industrial Metals Ltd. registered</p>
+                            <p class="activity-time">10 minutes ago</p>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background-color: rgba(39, 174, 96, 0.2); color: var(--secondary-color);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p class="activity-message"><strong>Listing Approved:</strong> #SL1023 - Steel Scrap Lot</p>
+                            <p class="activity-time">35 minutes ago</p>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background-color: rgba(231, 76, 60, 0.2); color: var(--error-color);">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p class="activity-message"><strong>New Dispute:</strong> Order #ORD528 - Delivery issue</p>
+                            <p class="activity-time">1 hour ago</p>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background-color: rgba(241, 196, 15, 0.2); color: var(--warning-color);">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p class="activity-message"><strong>Transaction:</strong> #TRX10354 - $1,250 completed</p>
+                            <p class="activity-time">2 hours ago</p>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background-color: rgba(57, 9, 188, 0.2); color: var(--primary-color);">
+                            <i class="fas fa-user-edit"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p class="activity-message"><strong>Profile Updated:</strong> MetalWorks Inc. changed contact info</p>
+                            <p class="activity-time">3 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="../js/admin.js"></script>
+</body>
+</html>
