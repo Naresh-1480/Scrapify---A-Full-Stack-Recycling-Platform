@@ -1,65 +1,51 @@
-📦 Scrapify
- ┣ 📂 backend        # Backend (Node.js + Express.js)
- ┃ ┣ 📂 config       # Configuration files (DB, etc.)
- ┃ ┃ ┣ db.js         # MongoDB connection setup
- ┃ ┣ 📂 controllers  # Handles request logic
- ┃ ┃ ┣ authController.js  # Login/Signup logic
- ┃ ┃ ┣ userController.js  # User-related actions
- ┃ ┃ ┣ scrapController.js # Scrap management
- ┃ ┃ ┣ orderController.js # Pickup & sales logic
- ┃ ┣ 📂 middleware   # Middleware (auth, validation)
- ┃ ┃ ┣ authMiddleware.js  # Token authentication
- ┃ ┃ ┣ errorHandler.js    # Global error handling
- ┃ ┣ 📂 models       # MongoDB Models (Schemas)
- ┃ ┃ ┣ User.js        # User model
- ┃ ┃ ┣ Scrap.js       # Scrap listing model
- ┃ ┃ ┣ Order.js       # Scrap order model
- ┃ ┣ 📂 routes       # API Routes
- ┃ ┃ ┣ authRoutes.js  # Login/Signup APIs
- ┃ ┃ ┣ userRoutes.js  # User actions
- ┃ ┃ ┣ scrapRoutes.js # Scrap management
- ┃ ┃ ┣ orderRoutes.js # Pickup & transaction APIs
- ┃ ┣ 📂 utils        # Helper functions
- ┃ ┃ ┣ jwtUtils.js    # JWT Token helpers
- ┃ ┃ ┣ emailHelper.js # Email notifications
- ┃ ┣ server.js       # Main backend server file
- ┃ ┣ .env            # Environment variables (DB URL, API keys)
- ┃ ┣ package.json    # Backend dependencies
+📂 SCRAPIFY - A FULL STACK RECYCLING APP
 
- ┣ 📂 frontend       # Frontend (HTML, CSS, JS)
- ┃ ┣ 📂 assets       # Images, icons, etc.
- ┃ ┣ 📂 css          # Stylesheets
- ┃ ┃ ┣ styles.css    # Main CSS file
- ┃ ┣ 📂 js           # JavaScript files
- ┃ ┃ ┣ main.js       # General JS functions
- ┃ ┃ ┣ auth.js       # Login/Signup functions
- ┃ ┃ ┣ dashboard.js  # User dashboard functions
- ┃ ┃ ┣ scrap.js      # Scrap listing logic
- ┃ ┃ ┣ order.js      # Pickup request logic
- ┃ ┣ 📂 pages        # HTML pages
- ┃ ┃ ┣ index.html        # Homepage
- ┃ ┃ ┣ login.html        # Login page
- ┃ ┃ ┣ signup.html       # Signup page
- ┃ ┃ ┣ dashboard.html    # User Dashboard
- ┃ ┃ ┣ business_dashboard.html  # Business Dashboard
- ┃ ┃ ┣ admin_dashboard.html     # Admin Panel
- ┃ ┃ ┣ scrap_marketplace.html   # Scrap Marketplace
- ┃ ┃ ┣ scrap_request.html       # Scrap Pickup Request
- ┃ ┃ ┣ order_tracking.html      # Order Tracking
- ┃ ┃ ┣ contact.html             # Contact Page
- ┃ ┃ ┣ about.html               # About Us
- ┃ ┃ ┣ terms.html               # Terms & Policies
- ┃ ┣ index.js       # Main entry for frontend (optional)
+📂 backend
+│── 📂 config
+│   ├── 📄 db.js
+├── 📂 middleware
+│   ├── 📄 auth.js
+│── 📂 models
+│   ├── 📄 Listing.js
+│   ├── 📄 User.js
+│── 📂 node_modules
+│── 📂 routes
+│   ├── 📄 auth.js
+│   ├── 📄 listings.js
+│   ├── 📄 profile.js
+│── 📄 .env
+│── 📄 package-lock.json
+│── 📄 package.json
+│── 📄 server.js
+│── 📂 blockchain
+│   ├── 📄 contract.sol
+│   ├── 📄 deploy.js
 
- ┣ 📂 blockchain (Optional) # Blockchain-based scrap transactions
- ┃ ┣ contract.sol   # Smart contract for transactions
- ┃ ┣ deploy.js      # Deployment script
+📂 docs
+│── 📄 API_reference.md
+│── 📄 README.md
 
- ┣ 📂 docs          # Documentation & APIs
- ┃ ┣ API_reference.md  # API documentation
- ┃ ┣ README.md        # Project documentation
-
- ┣ .gitignore        # Git ignore files
- ┣ README.md         # Project Overview
- ┣ package.json      # Main dependencies
- ┣ nodemon.json      # Backend auto-restart settings (for development)
+📂 frontend
+│── 📂 assets
+│── 📂 css
+│   ├── 📄 admin.css
+│   ├── 📄 buyer.css
+│   ├── 📄 login.css
+│   ├── 📄 seller.css
+│   ├── 📄 signup.css
+│   ├── 📄 style.css
+│── 📂 js
+│   ├── 📄 admin.js
+│   ├── 📄 auth.js
+│   ├── 📄 buyer.js
+│   ├── 📄 login.js
+│   ├── 📄 script.js
+│   ├── 📄 seller.js
+│   ├── 📄 signup.js
+│── 📂 pages
+│   ├── 📄 admin.html
+│   ├── 📄 buyer.html
+│   ├── 📄 index.html
+│   ├── 📄 login.html
+│   ├── 📄 seller.html
+│   ├── 📄 signup.html
