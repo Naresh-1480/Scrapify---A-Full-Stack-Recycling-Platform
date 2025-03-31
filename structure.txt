@@ -2,9 +2,11 @@
 ├── 📁 backend
 │   ├── 📁 models
 │   │   └── 🟨 User.js
+│   │   └── 🟨 Listing.js
 │   ├── 📁 node_modules
 │   ├── 📁 routes
 │   │   └── 🟨 authRoutes.js
+│   │   └── 🟨 listingRoutes.js
 │   ├── ⚙️ .env
 │   ├── 📦 package-lock.json
 │   ├── 📦 package.json
