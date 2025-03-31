@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // END FIX #1
 
+
 notificationsPanelToggle.addEventListener('click', () => {
     const notificationsPanel = document.querySelector('.notifications-panel');
     notificationsPanel.classList.toggle('minimized');
@@ -138,64 +139,125 @@ function setupFormHandlers() {
         sellForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const loader = document.querySelector('.loader');
-            loader.classList.remove('hidden');
+            if (loader) loader.classList.remove('hidden');
             
             try {
                 const formData = new FormData(sellForm);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Use the correct endpoint path
                 const response = await fetch('/api/listings', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
                 });
 
                 if (response.ok) {
                     alert('Listing created successfully!');
                     sellForm.reset();
-                    fetchListings(); // Refresh the listings after creating a new one
+                    // Fetch updated listings
+                    fetchListings();
                 } else {
-                    alert('Error creating listing. Please try again.');
+                    const errorData = await response.json();
+                    alert(`Error creating listing: ${errorData.msg || 'Please try again'}`);
                 }
             } catch (error) {
+                console.error('Error:', error);
                 alert('Error creating listing. Please try again.');
             } finally {
-                loader.classList.add('hidden');
+                if (loader) loader.classList.add('hidden');
             }
         });
     }
 }
 
 // Fetch and display listings
+// In seller.js - Update the fetchListings function
 async function fetchListings() {
     try {
         const response = await fetch('/api/listings');
         if (response.ok) {
             const listings = await response.json();
             const listingsContainer = document.querySelector('.listings-grid');
-            listingsContainer.innerHTML = '';
+            
+            if (listingsContainer) {
+                // Clear existing content
+                listingsContainer.innerHTML = '';
+                
+                if (listings.length === 0) {
+                    listingsContainer.innerHTML = '<p class="no-listings">No listings found. Create a new listing to get started!</p>';
+                    return;
+                }
 
-            listings.forEach(listing => {
-                const listingElement = document.createElement('div');
-                listingElement.classList.add('listing-card');
-                listingElement.innerHTML = `
-                    <h3>${listing.title}</h3>
-                    <p>${listing.description}</p>
-                    <p>Category: ${listing.category}</p>
-                    <p>Quantity: ${listing.quantity} kg</p>
-                    <p>Location: ${listing.location}</p>
-                    <p>Created by: ${listing.createdBy.username}</p>
-                    <p>Created at: ${new Date(listing.createdAt).toLocaleString()}</p>
-                    <div class="photos">
-                        ${listing.photos.map(photo => `<img src="${photo}" alt="Listing Photo">`).join('')}
-                    </div>
-                `;
-                listingsContainer.appendChild(listingElement);
-            });
+                // Create listing cards for each listing
+                listings.forEach(listing => {
+                    const listingElement = document.createElement('div');
+                    listingElement.classList.add('listing-card');
+                    listingElement.innerHTML = `
+                        <h3>${listing.title}</h3>
+                        <p>${listing.description}</p>
+                        <div class="listing-details">
+                            <span class="listing-category">Category: ${listing.category}</span>
+                            <span class="listing-quantity">Quantity: ${listing.quantity} kg</span>
+                        </div>
+                        <p class="listing-location">Location: ${listing.location}</p>
+                        <div class="listing-actions">
+                            <button class="edit-listing-btn" data-id="${listing._id}">Edit</button>
+                            <button class="delete-listing-btn" data-id="${listing._id}">Delete</button>
+                        </div>
+                    `;
+                    listingsContainer.appendChild(listingElement);
+                });
+                
+                // Add event listeners to the edit and delete buttons
+                setupListingActionButtons();
+            }
         } else {
-            alert('Error fetching listings.');
+            const errorData = await response.json();
+            console.error('Error fetching listings:', errorData);
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Error fetching listings.');
+        console.error('Error fetching listings:', error);
     }
+}
+
+// Add a function to handle the listing action buttons
+function setupListingActionButtons() {
+    // Edit button functionality 
+    document.querySelectorAll('.edit-listing-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const listingId = e.target.getAttribute('data-id');
+            // Implement edit functionality here
+            console.log('Edit listing with ID:', listingId);
+            alert('Edit functionality will be implemented soon.');
+        });
+    });
+    
+    // Delete button functionality
+    document.querySelectorAll('.delete-listing-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const listingId = e.target.getAttribute('data-id');
+            if (confirm('Are you sure you want to delete this listing?')) {
+                try {
+                    const response = await fetch(`/api/listings/${listingId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        alert('Listing deleted successfully!');
+                        fetchListings(); // Refresh the listings
+                    } else {
+                        alert('Error deleting listing. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error deleting listing. Please try again.');
+                }
+            }
+        });
+    });
 }
 
 // Create missing sections for dashboard tabs
@@ -913,6 +975,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Set up form submissions
     setupFormSubmissions();
+
+    // Fetch and display listings
+    fetchListings();
 });
 
 // Set up resize event listener for responsive adjustments
