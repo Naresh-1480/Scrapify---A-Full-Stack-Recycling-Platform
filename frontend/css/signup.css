@@ -203,13 +203,11 @@ body {
 }
 
 .checkmark {
-    display: inline-block;
-    width: 16px;
-    height: 17px;
+    width: 20px;
+    height: 20px;
     border: 2px solid #e0e0e0;
     border-radius: 4px;
     position: relative;
-    top: 2px;
 }
 
 .checkbox-container input[type="checkbox"]:checked + .checkmark {
