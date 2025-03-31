@@ -23,8 +23,17 @@ navLinks.forEach(link => {
 // Add Toggle for Notifications Panel
 const notificationsPanelToggle = document.createElement('button');
 notificationsPanelToggle.classList.add('notifications-toggle');
-notificationsPanelToggle.innerHTML = '<i class="fas fa-bell"></i>';
+notificationsPanelToggle.innerHTML = '<i class="fas fa-bell-slash"></i>'; // Start with bell-slash icon
 document.querySelector('.top-bar').appendChild(notificationsPanelToggle);
+
+// Set up initial state for notification panel - START FIX #1
+document.addEventListener('DOMContentLoaded', () => {
+    const notificationsPanel = document.querySelector('.notifications-panel');
+    if (notificationsPanel) {
+        notificationsPanel.classList.add('minimized'); // Add minimized class by default
+    }
+});
+// END FIX #1
 
 notificationsPanelToggle.addEventListener('click', () => {
     const notificationsPanel = document.querySelector('.notifications-panel');
@@ -40,104 +49,6 @@ notificationsPanelToggle.addEventListener('click', () => {
         icon.classList.add('fa-bell');
     }
 });
-
-// Earnings Chart
-function initializeEarningsChart() {
-    const ctx = document.getElementById('earningsChart');
-    if (ctx) {
-        const earningsChart = new Chart(ctx.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Monthly Earnings (₹)',
-                    data: [3000, 4500, 3800, 5200, 4800, 6000],
-                    borderColor: '#2ecc71',
-                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            display: true,
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
-    }
-}
-
-// Date and Time Update Function
-function updateDateTime() {
-    const dateElement = document.getElementById('current-date');
-    const timeElement = document.getElementById('current-time');
-    
-    if (dateElement && timeElement) {
-        const now = new Date();
-        const dateOptions = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
-        const timeOptions = { hour: '2-digit', minute: '2-digit' };
-        
-        dateElement.textContent = now.toLocaleDateString('en-IN', dateOptions);
-        timeElement.textContent = now.toLocaleTimeString('en-IN', timeOptions);
-    }
-}
-
-// Activity List Population
-const activities = [
-    { type: 'sale', message: 'New order received for Electronic Waste', time: '5 minutes ago' },
-    { type: 'message', message: 'New message from buyer regarding Metal Scrap', time: '1 hour ago' },
-    { type: 'listing', message: 'Your listing "Used Batteries" was approved', time: '2 hours ago' },
-    { type: 'payment', message: 'Payment received for Paper Waste order', time: '1 day ago' }
-];
-
-function populateActivityList() {
-    const activityList = document.querySelector('.activity-list');
-    if (!activityList) return;
-    
-    // Clear existing items
-    activityList.innerHTML = '';
-    
-    activities.forEach(activity => {
-        const activityItem = document.createElement('div');
-        activityItem.classList.add('activity-item');
-        
-        let icon;
-        switch(activity.type) {
-            case 'sale': icon = 'fa-shopping-cart'; break;
-            case 'message': icon = 'fa-comment'; break;
-            case 'listing': icon = 'fa-list'; break;
-            case 'payment': icon = 'fa-money-bill'; break;
-        }
-
-        activityItem.innerHTML = `
-            <i class="fas ${icon}"></i>
-            <div class="activity-content">
-                <p>${activity.message}</p>
-                <small>${activity.time}</small>
-            </div>
-        `;
-        
-        activityList.appendChild(activityItem);
-    });
-}
 
 // Notifications
 let notifications = [
@@ -169,37 +80,41 @@ function updateNotifications() {
         notificationsList.appendChild(notificationItem);
     });
     
-    // Add event listeners for read buttons
+    // Add event listeners correctly
     document.querySelectorAll('.read-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = parseInt(btn.dataset.id);
+        btn.addEventListener('click', (e) => {
+            const id = parseInt(e.target.getAttribute('data-id'));
             markNotificationAsRead(id);
         });
     });
 }
 
 function markNotificationAsRead(id) {
-    notifications = notifications.map(n => 
-        n.id === id ? { ...n, read: true } : n
+    // Find and update the specific notification
+    notifications = notifications.map(notification => 
+        notification.id === id ? { ...notification, read: true } : notification
     );
+    
+    // Update UI to reflect changes
     updateNotifications();
+    
+    // Update notification count if needed
+    updateNotificationCount();
 }
 
-// Mobile Navigation Toggle
-function setupMobileNavigation() {
-    const topBar = document.querySelector('.top-bar');
-    if (!topBar) return;
+function updateNotificationCount() {
+    // Count unread notifications
+    const unreadCount = notifications.filter(n => !n.read).length;
     
-    // Check if mobile menu button already exists
-    if (!topBar.querySelector('.mobile-menu-btn')) {
-        const mobileMenuBtn = document.createElement('button');
-        mobileMenuBtn.classList.add('mobile-menu-btn');
-        mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
-        topBar.prepend(mobileMenuBtn);
-
-        mobileMenuBtn.addEventListener('click', () => {
-            document.querySelector('.sidebar').classList.toggle('active');
-        });
+    // Update UI if a notification counter element exists
+    const counter = document.querySelector('.notification-counter');
+    if (counter) {
+        if (unreadCount > 0) {
+            counter.textContent = unreadCount;
+            counter.style.display = 'block';
+        } else {
+            counter.style.display = 'none';
+        }
     }
 }
 
@@ -287,10 +202,6 @@ function createDashboardSections() {
                                     <input type="number" id="scrapQuantity" placeholder="Enter quantity" min="1" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="scrapPrice">Price (₹ per kg)</label>
-                                    <input type="number" id="scrapPrice" placeholder="Enter price" min="1" required>
-                                </div>
-                                <div class="form-group">
                                     <label for="scrapPhotos">Upload Photos</label>
                                     <input type="file" id="scrapPhotos" multiple accept="image/*">
                                 </div>
@@ -323,50 +234,7 @@ function createDashboardSections() {
                                 </div>
                             </div>
                             <div class="listings-grid">
-                                <div class="listing-card">
-                                    <div class="listing-image">
-                                        <div class="listing-status active">Active</div>
-                                        <img src="/api/placeholder/300/200" alt="Paper Waste">
-                                    </div>
-                                    <div class="listing-details">
-                                        <h3>Paper Waste - 50kg</h3>
-                                        <p class="listing-price">₹12/kg</p>
-                                        <p class="listing-date">Listed on: Mar 15, 2025</p>
-                                        <div class="listing-actions">
-                                            <button class="edit-btn">Edit</button>
-                                            <button class="delete-btn">Delete</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="listing-card">
-                                    <div class="listing-image">
-                                        <div class="listing-status sold">Sold</div>
-                                        <img src="/api/placeholder/300/200" alt="Metal Scrap">
-                                    </div>
-                                    <div class="listing-details">
-                                        <h3>Metal Scrap - 30kg</h3>
-                                        <p class="listing-price">₹35/kg</p>
-                                        <p class="listing-date">Listed on: Mar 10, 2025</p>
-                                        <div class="listing-actions">
-                                            <button class="view-btn">View Details</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="listing-card">
-                                    <div class="listing-image">
-                                        <div class="listing-status review">In Review</div>
-                                        <img src="/api/placeholder/300/200" alt="Electronic Waste">
-                                    </div>
-                                    <div class="listing-details">
-                                        <h3>Electronic Waste - 15kg</h3>
-                                        <p class="listing-price">₹45/kg</p>
-                                        <p class="listing-date">Listed on: Mar 20, 2025</p>
-                                        <div class="listing-actions">
-                                            <button class="edit-btn">Edit</button>
-                                            <button class="delete-btn">Delete</button>
-                                        </div>
-                                    </div>
-                                </div>
+
                             </div>
                         </div>
                     `;
@@ -385,22 +253,6 @@ function createDashboardSections() {
                                 <div class="tab-content active" id="pending">
                                     <div class="orders-list">
                                         <div class="order-card">
-                                            <div class="order-header">
-                                                <div class="order-id">Order #12345</div>
-                                                <div class="order-date">March 25, 2025</div>
-                                            </div>
-                                            <div class="order-details">
-                                                <div class="order-info">
-                                                    <p><strong>Buyer:</strong> Prakash Singh</p>
-                                                    <p><strong>Item:</strong> Paper Waste (50kg)</p>
-                                                    <p><strong>Total:</strong> ₹600</p>
-                                                </div>
-                                                <div class="order-actions">
-                                                    <button class="primary-btn">Accept</button>
-                                                    <button class="secondary-btn">Reject</button>
-                                                </div>
-                                            </div>
-                                        </div>
                                         <!-- More order cards would go here -->
                                     </div>
                                 </div>
@@ -690,14 +542,8 @@ function createDashboardSections() {
     // Set up tab navigation in the Orders section
     setupOrdersTabs();
     
-    // Initialize any charts that are needed
-    if (document.getElementById('revenueChart')) {
-        // Initialize revenue chart
-    }
-    
-    if (document.getElementById('categoryChart')) {
-        // Initialize category chart
-    }
+    // Initialize analytics charts
+    initializeAnalyticsCharts();
 }
 
 function setupOrdersTabs() {
@@ -747,7 +593,7 @@ function setupAccordion() {
     });
 }
 
-// Initialize additional charts for the Analytics section
+// Initialize analytics charts
 function initializeAnalyticsCharts() {
     const revenueChart = document.getElementById('revenueChart');
     if (revenueChart) {
@@ -815,6 +661,7 @@ function initializeAnalyticsCharts() {
 }
 
 // Setup Chat Functionality in Messages section
+// Setup Chat Functionality in Messages section
 function setupChatFunctionality() {
     const chatInput = document.querySelector('.chat-input input');
     const sendBtn = document.querySelector('.send-btn');
@@ -822,9 +669,17 @@ function setupChatFunctionality() {
     
     if (!chatInput || !sendBtn || !chatMessages) return;
     
-    sendBtn.addEventListener('click', sendMessage);
+    // Fix for the Enter key press event
     chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && chatInput.value.trim() !== '') {
+            e.preventDefault(); // Prevent form submission
+            sendMessage();
+        }
+    });
+    
+    // Fix for the send button click event
+    sendBtn.addEventListener('click', () => {
+        if (chatInput.value.trim() !== '') {
             sendMessage();
         }
     });
@@ -837,6 +692,7 @@ function setupChatFunctionality() {
         const timeOptions = { hour: '2-digit', minute: '2-digit' };
         const timeString = now.toLocaleTimeString('en-IN', timeOptions);
         
+        // Create and append the new message element
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', 'sent');
         messageElement.innerHTML = `
@@ -845,9 +701,51 @@ function setupChatFunctionality() {
         `;
         
         chatMessages.appendChild(messageElement);
+        
+        // Auto-scroll to the bottom of the chat
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Clear the input field
         chatInput.value = '';
+        
+        // Focus the input field for the next message
+        chatInput.focus();
+        
+        // Simulate a response (for demo purposes)
+        setTimeout(() => {
+            const responseElement = document.createElement('div');
+            responseElement.classList.add('message', 'received');
+            responseElement.innerHTML = `
+                <p>Thanks for your message. I'll get back to you soon.</p>
+                <span class="message-time">${timeString}</span>
+            `;
+            chatMessages.appendChild(responseElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 1500);
     }
+    
+    // Add functionality to conversation list items
+    const conversations = document.querySelectorAll('.conversation');
+    conversations.forEach(conversation => {
+        conversation.addEventListener('click', () => {
+            // Update active conversation
+            conversations.forEach(c => c.classList.remove('active'));
+            conversation.classList.add('active');
+            
+            // Update chat header with selected conversation user info
+            const userName = conversation.querySelector('h4').textContent;
+            const chatHeader = document.querySelector('.chat-header .chat-user h3');
+            if (chatHeader) {
+                chatHeader.textContent = userName;
+            }
+            
+            // Clear unread count
+            const unreadCount = conversation.querySelector('.unread-count');
+            if (unreadCount) {
+                unreadCount.remove();
+            }
+        });
+    });
 }
 
 // Handle mobile responsiveness
@@ -867,6 +765,11 @@ function handleMobileLayout() {
         sidebar.classList.remove('mobile');
         mainContent.classList.remove('mobile');
     }
+}
+
+// Setup mobile navigation
+function setupMobileNavigation() {
+    // Add mobile navigation functionality if needed
 }
 
 // Setup all form submissions
@@ -924,6 +827,7 @@ function setupMarkAllReadButton() {
                 read: true
             }));
             updateNotifications();
+            updateNotificationCount();
         });
     }
 }
@@ -932,10 +836,6 @@ function setupMarkAllReadButton() {
 document.addEventListener('DOMContentLoaded', () => {
     // Create missing dashboard sections
     createDashboardSections();
-    
-    // Update date and time immediately and then every minute
-    updateDateTime();
-    setInterval(updateDateTime, 60000);
     
     // Populate activity list
     populateActivityList();
