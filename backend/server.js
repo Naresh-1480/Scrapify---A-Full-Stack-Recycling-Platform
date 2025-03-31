@@ -4,6 +4,7 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");  // Required for authentication
 const User = require("./models/User");
+const listingRoutes = require("./routes/listingRoutes");
 
 const app = express();
 
@@ -11,12 +12,25 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Authentication middleware
+const auth = (req, res, next) => {
+  const token = req.header('Authorization').replace('Bearer ', '');
+  if (!token) return res.status(401).send({ error: 'Access denied. No token provided.' });
+
+  try {
+    const decoded = jwt.verify(token, "secret_key");
+    req.user = decoded;
+    next();
+  } catch (ex) {
+    res.status(400).send({ error: 'Invalid token.' });
+  }
+};
+
 // Connect to MongoDB
 mongoose.connect("mongodb+srv://choudharynaresh2005:Naresh1480@scrapify.f51pm1i.mongodb.net/scrapify?retryWrites=true&w=majority&appName=Scrapify", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
 
 // Signup Route
 app.post("/api/auth/signup", async (req, res) => {
@@ -41,7 +55,7 @@ app.post("/api/auth/signup", async (req, res) => {
   }
 });
 
-// ✅ ADD LOGIN ROUTE HERE
+// Login Route
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -63,6 +77,9 @@ app.post("/api/auth/login", async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 });
+
+// Use routes with authentication
+app.use('/api', auth, listingRoutes);
 
 // Start server
 const PORT = 5000;

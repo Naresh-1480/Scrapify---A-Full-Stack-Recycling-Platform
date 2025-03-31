@@ -141,16 +141,60 @@ function setupFormHandlers() {
             loader.classList.remove('hidden');
             
             try {
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                alert('Listing created successfully!');
-                sellForm.reset();
+                const formData = new FormData(sellForm);
+                const response = await fetch('/api/listings', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Listing created successfully!');
+                    sellForm.reset();
+                    fetchListings(); // Refresh the listings after creating a new one
+                } else {
+                    alert('Error creating listing. Please try again.');
+                }
             } catch (error) {
                 alert('Error creating listing. Please try again.');
             } finally {
                 loader.classList.add('hidden');
             }
         });
+    }
+}
+
+// Fetch and display listings
+async function fetchListings() {
+    try {
+        const response = await fetch('/api/listings');
+        if (response.ok) {
+            const listings = await response.json();
+            const listingsContainer = document.querySelector('.listings-grid');
+            listingsContainer.innerHTML = '';
+
+            listings.forEach(listing => {
+                const listingElement = document.createElement('div');
+                listingElement.classList.add('listing-card');
+                listingElement.innerHTML = `
+                    <h3>${listing.title}</h3>
+                    <p>${listing.description}</p>
+                    <p>Category: ${listing.category}</p>
+                    <p>Quantity: ${listing.quantity} kg</p>
+                    <p>Location: ${listing.location}</p>
+                    <p>Created by: ${listing.createdBy.username}</p>
+                    <p>Created at: ${new Date(listing.createdAt).toLocaleString()}</p>
+                    <div class="photos">
+                        ${listing.photos.map(photo => `<img src="${photo}" alt="Listing Photo">`).join('')}
+                    </div>
+                `;
+                listingsContainer.appendChild(listingElement);
+            });
+        } else {
+            alert('Error fetching listings.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error fetching listings.');
     }
 }
 
@@ -179,7 +223,7 @@ function createDashboardSections() {
                             <form id="sellScrapForm" class="form-container">
                                 <div class="form-group">
                                     <label for="scrapCategory">Scrap Category</label>
-                                    <select id="scrapCategory" required>
+                                    <select id="scrapCategory" name="category" required>
                                         <option value="">Select Category</option>
                                         <option value="paper">Paper Waste</option>
                                         <option value="plastic">Plastic</option>
@@ -191,23 +235,19 @@ function createDashboardSections() {
                                 </div>
                                 <div class="form-group">
                                     <label for="scrapTitle">Title</label>
-                                    <input type="text" id="scrapTitle" placeholder="Enter a descriptive title" required>
+                                    <input type="text" id="scrapTitle" name="title" placeholder="Enter a descriptive title" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="scrapDescription">Description</label>
-                                    <textarea id="scrapDescription" placeholder="Describe your scrap in detail" rows="4" required></textarea>
+                                    <textarea id="scrapDescription" name="description" placeholder="Describe your scrap in detail" rows="4" required></textarea>
                                 </div>
                                 <div class="form-group">
                                     <label for="scrapQuantity">Quantity (kg)</label>
-                                    <input type="number" id="scrapQuantity" placeholder="Enter quantity" min="1" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="scrapPhotos">Upload Photos</label>
-                                    <input type="file" id="scrapPhotos" multiple accept="image/*">
+                                    <input type="number" id="scrapQuantity" name="quantity" placeholder="Enter quantity" min="1" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="pickupLocation">Pickup Location</label>
-                                    <input type="text" id="pickupLocation" placeholder="Enter your address" required>
+                                    <input type="text" id="pickupLocation" name="location" placeholder="Enter your address" required>
                                 </div>
                                 <div class="form-actions">
                                     <button type="reset" class="secondary-btn">Cancel</button>
@@ -397,7 +437,7 @@ function createDashboardSections() {
                                         </div>
                                     </div>
                                 </div>
-                                <div class="profile-content">
+                                 <div class="profile-content">
                                     <form class="profile-form">
                                         <div class="form-section">
                                             <h3>Personal Information</h3>
