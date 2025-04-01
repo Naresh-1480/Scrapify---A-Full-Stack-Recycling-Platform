@@ -5,6 +5,7 @@ const router = express.Router();
 // Create a new listing
 router.post('/listings', async (req, res) => {
     try {
+        console.log("start");
         const { category, title, description, quantity, location } = req.body;
         console.log('Received Data:', req.body);  // Debug log
         const newListing = new Listing({

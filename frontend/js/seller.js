@@ -17,6 +17,20 @@ navLinks.forEach(link => {
                 section.classList.add('active');
             }
         });
+
+        // Set up form handler if we're on the sell page
+        if (page === 'sell') {
+            setTimeout(() => {
+                setupFormHandlers();
+            }, 0);
+        }
+        
+        // Fetch listings if we're on the listings page
+        if (page === 'listings') {
+            setTimeout(() => {
+                fetchListings();
+            }, 0);
+        }
     });
 });
 
@@ -34,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 // END FIX #1
-
 
 notificationsPanelToggle.addEventListener('click', () => {
     const notificationsPanel = document.querySelector('.notifications-panel');
@@ -134,50 +147,105 @@ function setupLogoutHandler() {
 
 // Form Submission Handler (for Sell Scrap form)
 function setupFormHandlers() {
+    console.log('Setting up form handlers...');
     const sellForm = document.getElementById('sellScrapForm');
+    console.log('Form element:', sellForm);
+    
     if (sellForm) {
         sellForm.addEventListener('submit', async (e) => {
+            console.log('Form submitted');
             e.preventDefault();
             const loader = document.querySelector('.loader');
             if (loader) loader.classList.remove('hidden');
             
             try {
                 const formData = new FormData(sellForm);
-                const data = Object.fromEntries(formData.entries());
+                const data = {
+                    category: formData.get('category'),
+                    title: formData.get('title'),
+                    description: formData.get('description'),
+                    quantity: parseFloat(formData.get('quantity')),
+                    location: formData.get('location'),
+                    price: calculatePrice(formData.get('category'), parseFloat(formData.get('quantity')))
+                };
                 
+                console.log('Form data:', data);
+                
+                // Get the authentication token from localStorage
+                const token = localStorage.getItem('token');
+                console.log('Token:', token);
+                
+                if (!token) {
+                    throw new Error('Please login to create a listing');
+                }
+
                 // Use the correct endpoint path
-                const response = await fetch('/api/listings', {
+                console.log('Sending request to server...');
+                const response = await fetch('http://localhost:5000/api/listings', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(data)
                 });
 
+                console.log('Server response:', response);
+                
+                const responseData = await response.json();
+                
                 if (response.ok) {
                     alert('Listing created successfully!');
                     sellForm.reset();
                     // Fetch updated listings
                     fetchListings();
                 } else {
-                    const errorData = await response.json();
-                    alert(`Error creating listing: ${errorData.msg || 'Please try again'}`);
+                    throw new Error(responseData.msg || 'Error creating listing. Please try again.');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error creating listing. Please try again.');
+                alert(error.message || 'Error creating listing. Please try again.');
             } finally {
                 if (loader) loader.classList.add('hidden');
             }
         });
+    } else {
+        console.error('Sell scrap form not found');
     }
 }
 
+// Helper function to calculate price based on category and quantity
+function calculatePrice(category, quantity) {
+    const rates = {
+        'paper': 12,
+        'plastic': 15,
+        'metal': 35,
+        'electronics': 45,
+        'glass': 8,
+        'other': 10
+    };
+    
+    return rates[category] * quantity;
+}
+
 // Fetch and display listings
-// In seller.js - Update the fetchListings function
 async function fetchListings() {
+    console.log("Fetching listings...");
     try {
-        const response = await fetch('/api/listings');
+        // Get the authentication token from localStorage
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            console.error('No authentication token found');
+            return;
+        }
+
+        const response = await fetch('http://localhost:5000/api/listings', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
         if (response.ok) {
             const listings = await response.json();
             const listingsContainer = document.querySelector('.listings-grid');
@@ -241,7 +309,7 @@ function setupListingActionButtons() {
             const listingId = e.target.getAttribute('data-id');
             if (confirm('Are you sure you want to delete this listing?')) {
                 try {
-                    const response = await fetch(`/api/listings/${listingId}`, {
+                    const response = await fetch(`http://localhost:5000/api/listings/${listingId}`, {
                         method: 'DELETE'
                     });
                     
@@ -258,394 +326,6 @@ function setupListingActionButtons() {
             }
         });
     });
-}
-
-// Create missing sections for dashboard tabs
-function createDashboardSections() {
-    const mainContent = document.querySelector('.main-content');
-    if (!mainContent) return;
-    
-    const existingSections = Array.from(document.querySelectorAll('.dashboard-section')).map(s => s.id);
-    const requiredSections = ['overview', 'sell', 'listings', 'orders', 'messages', 'analytics', 'profile', 'help'];
-    
-    requiredSections.forEach(section => {
-        if (!existingSections.includes(section)) {
-            const newSection = document.createElement('section');
-            newSection.id = section;
-            newSection.classList.add('dashboard-section');
-            
-            let sectionContent = '';
-            
-            // Create specialized content for each section
-            switch(section) {
-                case 'sell':
-                    sectionContent = `
-                        <h1>Sell Scrap</h1>
-                        <div class="section-content">
-                            <form id="sellScrapForm" class="form-container">
-                                <div class="form-group">
-                                    <label for="scrapCategory">Scrap Category</label>
-                                    <select id="scrapCategory" name="category" required>
-                                        <option value="">Select Category</option>
-                                        <option value="paper">Paper Waste</option>
-                                        <option value="plastic">Plastic</option>
-                                        <option value="metal">Metal Scrap</option>
-                                        <option value="electronics">Electronic Waste</option>
-                                        <option value="glass">Glass</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="scrapTitle">Title</label>
-                                    <input type="text" id="scrapTitle" name="title" placeholder="Enter a descriptive title" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="scrapDescription">Description</label>
-                                    <textarea id="scrapDescription" name="description" placeholder="Describe your scrap in detail" rows="4" required></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label for="scrapQuantity">Quantity (kg)</label>
-                                    <input type="number" id="scrapQuantity" name="quantity" placeholder="Enter quantity" min="1" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="pickupLocation">Pickup Location</label>
-                                    <input type="text" id="pickupLocation" name="location" placeholder="Enter your address" required>
-                                </div>
-                                <div class="form-actions">
-                                    <button type="reset" class="secondary-btn">Cancel</button>
-                                    <button type="submit" class="primary-btn">Create Listing</button>
-                                </div>
-                            </form>
-                        </div>
-                    `;
-                    break;
-                case 'listings':
-                    sectionContent = `
-                        <h1>Manage Listings</h1>
-                        <div class="section-content">
-                            <div class="listings-controls">
-                                <button class="primary-btn">Add New Listing</button>
-                                <div class="listings-filter">
-                                    <label for="listingStatus">Filter by:</label>
-                                    <select id="listingStatus">
-                                        <option value="all">All Listings</option>
-                                        <option value="active">Active</option>
-                                        <option value="sold">Sold</option>
-                                        <option value="review">In Review</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="listings-grid">
-
-                            </div>
-                        </div>
-                    `;
-                    break;
-                case 'orders':
-                    sectionContent = `
-                        <h1>Orders & Transactions</h1>
-                        <div class="section-content">
-                            <div class="tabs-container">
-                                <div class="tabs">
-                                    <button class="tab-btn active" data-tab="pending">Pending (3)</button>
-                                    <button class="tab-btn" data-tab="approved">Approved (2)</button>
-                                    <button class="tab-btn" data-tab="rejected">Rejected (1)</button>
-                                    <button class="tab-btn" data-tab="completed">Completed (8)</button>
-                                </div>
-                                <div class="tab-content active" id="pending">
-                                    <div class="orders-list">
-                                        <div class="order-card">
-                                        <!-- More order cards would go here -->
-                                    </div>
-                                </div>
-                                <div class="tab-content" id="approved">
-                                    <p>Content for approved orders</p>
-                                </div>
-                                <div class="tab-content" id="rejected">
-                                    <p>Content for rejected orders</p>
-                                </div>
-                                <div class="tab-content" id="completed">
-                                    <p>Content for completed orders</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                case 'messages':
-                    sectionContent = `
-                        <h1>Messages</h1>
-                        <div class="section-content">
-                            <div class="messages-container">
-                                <div class="messages-sidebar">
-                                    <div class="messages-search">
-                                        <input type="text" placeholder="Search messages...">
-                                    </div>
-                                    <div class="conversation-list">
-                                        <div class="conversation active">
-                                            <img src="/api/placeholder/40/40" alt="User" class="user-avatar">
-                                            <div class="conversation-preview">
-                                                <h4>Prakash Singh</h4>
-                                                <p>Is the electronic waste still available?</p>
-                                            </div>
-                                            <div class="conversation-meta">
-                                                <span class="time">10:30 AM</span>
-                                                <span class="unread-count">2</span>
-                                            </div>
-                                        </div>
-                                        <div class="conversation">
-                                            <img src="/api/placeholder/40/40" alt="User" class="user-avatar">
-                                            <div class="conversation-preview">
-                                                <h4>Amir Khan</h4>
-                                                <p>I'll pick up the paper waste tomorrow</p>
-                                            </div>
-                                            <div class="conversation-meta">
-                                                <span class="time">Yesterday</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="messages-content">
-                                    <div class="chat-header">
-                                        <div class="chat-user">
-                                            <img src="/api/placeholder/40/40" alt="User" class="user-avatar">
-                                            <div>
-                                                <h3>Prakash Singh</h3>
-                                                <span>Online</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="chat-messages">
-                                        <div class="message received">
-                                            <p>Hello, I'm interested in your electronic waste listing.</p>
-                                            <span class="message-time">10:15 AM</span>
-                                        </div>
-                                        <div class="message sent">
-                                            <p>Hi there! Yes, it's still available.</p>
-                                            <span class="message-time">10:18 AM</span>
-                                        </div>
-                                        <div class="message received">
-                                            <p>Is the electronic waste still available?</p>
-                                            <span class="message-time">10:30 AM</span>
-                                        </div>
-                                    </div>
-                                    <div class="chat-input">
-                                        <input type="text" placeholder="Type a message...">
-                                        <button class="send-btn"><i class="fas fa-paper-plane"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                case 'analytics':
-                    sectionContent = `
-                        <h1>Analytics & Reports</h1>
-                        <div class="section-content">
-                            <div class="analytics-cards">
-                                <div class="analytics-card">
-                                    <h3>Total Sales</h3>
-                                    <p class="analytics-value">₹15,750</p>
-                                    <div class="analytics-chart small-chart">
-                                        <!-- Small chart placeholder -->
-                                        <div style="height: 50px; background: linear-gradient(90deg, #f1f1f1 0%, #2ecc71 70%);"></div>
-                                    </div>
-                                </div>
-                                <div class="analytics-card">
-                                    <h3>Orders Completed</h3>
-                                    <p class="analytics-value">14</p>
-                                    <p class="analytics-trend positive">+3 from last month</p>
-                                </div>
-                                <div class="analytics-card">
-                                    <h3>Top Selling Category</h3>
-                                    <p class="analytics-value">Metal Scrap</p>
-                                    <p class="analytics-trend">35% of total sales</p>
-                                </div>
-                            </div>
-                            <div class="analytics-charts">
-                                <div class="chart-container large">
-                                    <h3>Monthly Revenue</h3>
-                                    <canvas id="revenueChart" height="250"></canvas>
-                                </div>
-                                <div class="chart-container large">
-                                    <h3>Sales by Category</h3>
-                                    <canvas id="categoryChart" height="250"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                case 'profile':
-                    sectionContent = `
-                        <h1>Profile & Settings</h1>
-                        <div class="section-content">
-                            <div class="profile-container">
-                                <div class="profile-sidebar">
-                                    <div class="profile-photo">
-                                        <img src="/api/placeholder/150/150" alt="Profile Photo">
-                                        <button class="change-photo-btn"><i class="fas fa-camera"></i></button>
-                                    </div>
-                                    <div class="profile-stats">
-                                        <div class="stat">
-                                            <span class="stat-value">24</span>
-                                            <span class="stat-label">Listings</span>
-                                        </div>
-                                        <div class="stat">
-                                            <span class="stat-value">14</span>
-                                            <span class="stat-label">Sold</span>
-                                        </div>
-                                        <div class="stat">
-                                            <span class="stat-value">4.8</span>
-                                            <span class="stat-label">Rating</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                 <div class="profile-content">
-                                    <form class="profile-form">
-                                        <div class="form-section">
-                                            <h3>Personal Information</h3>
-                                            <div class="form-group">
-                                                <label for="fullName">Full Name</label>
-                                                <input type="text" id="fullName" value="Naresh Kumar">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="phone">Phone Number</label>
-                                                <input type="tel" id="phone" value="+91 98765 43210">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="email">Email</label>
-                                                <input type="email" id="email" value="naresh@example.com">
-                                            </div>
-                                        </div>
-                                        <div class="form-section">
-                                            <h3>Address</h3>
-                                            <div class="form-group">
-                                                <label for="address">Street Address</label>
-                                                <input type="text" id="address" value="123 Main Street">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="city">City</label>
-                                                <input type="text" id="city" value="Mumbai">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="state">State</label>
-                                                <input type="text" id="state" value="Maharashtra">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="pincode">Pincode</label>
-                                                <input type="text" id="pincode" value="400001">
-                                            </div>
-                                        </div>
-                                        <div class="form-section">
-                                            <h3>Payment Information</h3>
-                                            <div class="form-group">
-                                                <label for="accountName">Account Holder Name</label>
-                                                <input type="text" id="accountName" value="Naresh Kumar">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="accountNumber">Account Number</label>
-                                                <input type="text" id="accountNumber" value="XXXX XXXX 1234">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="bankName">Bank Name</label>
-                                                <input type="text" id="bankName" value="State Bank of India">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="ifsc">IFSC Code</label>
-                                                <input type="text" id="ifsc" value="SBIN0001234">
-                                            </div>
-                                        </div>
-                                        <div class="form-actions">
-                                            <button type="submit" class="primary-btn">Save Changes</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                case 'help':
-                    sectionContent = `
-                        <h1>Help & Support</h1>
-                        <div class="section-content">
-                            <div class="help-container">
-                                <div class="faq-section">
-                                    <h2>Frequently Asked Questions</h2>
-                                    <div class="accordion">
-                                        <div class="accordion-item">
-                                            <div class="accordion-header">
-                                                How do I create a new listing?
-                                                <i class="fas fa-chevron-down"></i>
-                                            </div>
-                                            <div class="accordion-content">
-                                                <p>To create a new listing, go to the "Sell Scrap" section from the sidebar menu. Fill in all the required details about your scrap item including category, quantity, price, and photos. Once submitted, your listing will be reviewed by our team before it goes live.</p>
-                                            </div>
-                                        </div>
-                                        <div class="accordion-item">
-                                            <div class="accordion-header">
-                                                How do I get paid for my sales?
-                                                <i class="fas fa-chevron-down"></i>
-                                            </div>
-                                            <div class="accordion-content">
-                                                <p>Payment is processed within 3-5 business days after the scrap has been successfully picked up and verified by the buyer. The amount will be transferred to the bank account you've provided in your profile settings.</p>
-                                            </div>
-                                        </div>
-                                        <div class="accordion-item">
-                                            <div class="accordion-header">
-                                                What if the buyer doesn't show up?
-                                                <i class="fas fa-chevron-down"></i>
-                                            </div>
-                                            <div class="accordion-content">
-                                                <p>If a buyer doesn't show up at the agreed time, you can mark the order as "Buyer No-Show" in the order details. After 24 hours, the order will be automatically canceled and your scrap will be relisted for sale.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="contact-support">
-                                    <h2>Contact Support</h2>
-                                    <form class="support-form">
-                                        <div class="form-group">
-                                            <label for="issueType">Issue Type</label>
-                                            <select id="issueType" required>
-                                                <option value="">Select Issue Type</option>
-                                                <option value="account">Account Related</option>
-                                                <option value="payment">Payment Related</option>
-                                                <option value="listing">Listing Related</option>
-                                                <option value="order">Order Related</option>
-                                                <option value="other">Other</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="issueDescription">Describe Your Issue</label>
-                                            <textarea id="issueDescription" rows="5" placeholder="Please provide details about your issue..." required></textarea>
-                                        </div>
-                                        <div class="form-actions">
-                                            <button type="submit" class="primary-btn">Submit Ticket</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                default:
-                    sectionContent = `
-                        <h1>${section.charAt(0).toUpperCase() + section.slice(1)}</h1>
-                        <div class="section-content">
-                            <p>This is the ${section} section. Content is coming soon.</p>
-                        </div>
-                    `;
-            }
-            
-            newSection.innerHTML = sectionContent;
-            mainContent.appendChild(newSection);
-        }
-    });
-    
-    // Set up tab navigation in the Orders section
-    setupOrdersTabs();
-    
-    // Initialize analytics charts
-    initializeAnalyticsCharts();
 }
 
 function setupOrdersTabs() {
@@ -695,8 +375,52 @@ function setupAccordion() {
     });
 }
 
+// Initialize earnings chart
+function initializeEarningsChart() {
+    const earningsChart = document.getElementById('earningsChart');
+    if (earningsChart) {
+        new Chart(earningsChart.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Earnings (₹)',
+                    data: [3800, 5200, 4500, 6300, 5800, 7200],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
 // Initialize analytics charts
 function initializeAnalyticsCharts() {
+    // Revenue Chart
     const revenueChart = document.getElementById('revenueChart');
     if (revenueChart) {
         new Chart(revenueChart.getContext('2d'), {
@@ -714,6 +438,11 @@ function initializeAnalyticsCharts() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -731,6 +460,7 @@ function initializeAnalyticsCharts() {
         });
     }
     
+    // Category Chart
     const categoryChart = document.getElementById('categoryChart');
     if (categoryChart) {
         new Chart(categoryChart.getContext('2d'), {
@@ -762,7 +492,6 @@ function initializeAnalyticsCharts() {
     }
 }
 
-// Setup Chat Functionality in Messages section
 // Setup Chat Functionality in Messages section
 function setupChatFunctionality() {
     const chatInput = document.querySelector('.chat-input input');
@@ -936,19 +665,14 @@ function setupMarkAllReadButton() {
 
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Create missing dashboard sections
-    createDashboardSections();
-    
     // Populate activity list
     populateActivityList();
     
     // Update notifications
     updateNotifications();
     
-    // Initialize earnings chart
+    // Initialize charts
     initializeEarningsChart();
-    
-    // Initialize analytics charts
     initializeAnalyticsCharts();
     
     // Set up mobile navigation

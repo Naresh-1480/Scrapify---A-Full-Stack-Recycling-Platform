@@ -14,7 +14,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({origin: '*'})); // Allow requests from frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Authentication middleware
