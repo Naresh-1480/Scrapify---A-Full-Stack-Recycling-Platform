@@ -1,0 +1,309 @@
+/* Extending from existing buyer.css with additional business-specific styles */
+
+/* Business-specific Variables */
+:root {
+    --primary-color: #3909bc;
+    --secondary-color: #27ae60;
+    --dark-color: #2c3e50;
+    --light-color: #ecf0f1;
+    --white: #ffffff;
+    --gray: #95a5a6;
+    --error-color: #e74c3c;
+    --success-color: #2ecc71;
+    --warning-color: #f1c40f;
+    --business-accent: #2980b9;
+    --chart-bg: rgba(57, 9, 188, 0.1);
+}
+
+/* Business Badge */
+.business-badge {
+    background-color: var(--business-accent);
+    color: var(--white);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    margin-top: 10px;
+}
+
+/* Charts Grid */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.chart-card {
+    background-color: var(--white);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.chart-card h3 {
+    margin-bottom: 15px;
+    color: var(--dark-color);
+}
+
+/* Auction Cards */
+.auctions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.auction-card {
+    background-color: var(--white);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.auction-header {
+    background-color: var(--business-accent);
+    color: var(--white);
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.time-left {
+    font-weight: 600;
+    color: var(--warning-color);
+}
+
+.auction-content {
+    padding: 15px;
+}
+
+.auction-details {
+    margin: 15px 0;
+}
+
+.auction-details p {
+    margin: 5px 0;
+    color: var(--gray);
+}
+
+.auction-details i {
+    margin-right: 10px;
+    color: var(--business-accent);
+}
+
+.bid-section {
+    border-top: 1px solid var(--light-color);
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+.current-bid {
+    margin-bottom: 10px;
+}
+
+.bid-amount {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--business-accent);
+    margin-left: 10px;
+}
+
+.bid-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.bid-input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--gray);
+    border-radius: 5px;
+}
+
+.bid-btn {
+    background-color: var(--business-accent);
+    color: var(--white);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.bid-btn:hover {
+    background-color: #2573a7;
+}
+
+/* Collection Schedule */
+.schedule-section {
+    background-color: var(--white);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.pickup-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: var(--light-color);
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.pickup-status {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.pickup-status.scheduled {
+    background-color: var(--warning-color);
+}
+
+.pickup-status.completed {
+    background-color: var(--success-color);
+}
+
+.pickup-details {
+    flex: 1;
+}
+
+.pickup-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Supplier Cards */
+.suppliers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.supplier-card {
+    background-color: var(--white);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.supplier-header {
+    position: relative;
+    height: 100px;
+    background-color: var(--business-accent);
+}
+
+.supplier-header img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -30px;
+    left: 20px;
+    border: 4px solid var(--white);
+}
+
+.supplier-rating {
+    position: absolute;
+    right: 20px;
+    bottom: 10px;
+    background-color: var(--white);
+    padding: 5px 10px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.supplier-rating i {
+    color: var(--warning-color);
+}
+
+.supplier-content {
+    padding: 40px 20px 20px;
+}
+
+.supplier-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--light-color);
+}
+
+.supplier-stats .stat {
+    text-align: center;
+}
+
+.supplier-stats .stat span {
+    display: block;
+    color: var(--gray);
+    font-size: 0.8rem;
+}
+
+.supplier-stats .stat strong {
+    color: var(--business-accent);
+    font-size: 1.2rem;
+}
+
+/* Report Cards */
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.report-card {
+    background-color: var(--white);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+    text-align: center;
+}
+
+.report-icon {
+    width: 60px;
+    height: 60px;
+    background-color: var(--chart-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+}
+
+.report-icon i {
+    font-size: 24px;
+    color: var(--business-accent);
+}
+
+.report-card h3 {
+    margin-bottom: 10px;
+}
+
+.report-card p {
+    color: var(--gray);
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .auctions-grid,
+    .suppliers-grid,
+    .reports-grid {
+        grid-template-columns: 1fr;
+    }
+}

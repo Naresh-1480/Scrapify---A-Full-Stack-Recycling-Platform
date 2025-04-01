@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Dashboard | ScrapTrade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/business.css">
+    <link rel="stylesheet" href="../css/buyer.css">
+    <!-- Add Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div class="loader hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="logo">
+            <!-- <img src="logo.png" alt="ScrapTrade Logo"> -->
+             <h1>SCRAPIFY</h1>
+            <div class="business-badge">Business Account</div>
+        </div>
+        <ul class="nav-links">
+            <li class="active" data-section="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </li>
+            <li data-section="auctions">
+                <i class="fas fa-gavel"></i>
+                <span>Bulk Auctions</span>
+                <span class="badge">5</span>
+            </li>
+            <li data-section="collection">
+                <i class="fas fa-truck"></i>
+                <span>Scrap Collection</span>
+            </li>
+            <li data-section="suppliers">
+                <i class="fas fa-industry"></i>
+                <span>Suppliers</span>
+            </li>
+            <li data-section="payments">
+                <i class="fas fa-wallet"></i>
+                <span>Payments</span>
+            </li>
+            <li data-section="reports">
+                <i class="fas fa-file-alt"></i>
+                <span>Reports</span>
+            </li>
+            <li data-section="notifications">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="badge">3</span>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <button class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="date-time">
+            <span id="current-date">April 1, 2025</span>
+            <span id="current-time">10:30 AM</span>
+        </div>
+        <div class="user-info">
+            <div class="verification-badge verified">
+                <i class="fas fa-check-circle"></i>
+                <span>Verified Business</span>
+            </div>
+            <div class="wallet-balance">
+                <i class="fas fa-wallet"></i>
+                <span>₹50,000</span>
+            </div>
+            <button class="notifications-toggle" id="notificationsToggle">
+                <i class="fas fa-bell"></i>
+                <span class="badge">3</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Analytics Dashboard Section -->
+        <div class="dashboard-section active" id="dashboardSection">
+            <h2>Business Analytics</h2>
+            
+            <!-- Overview Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Scrap Purchased</h3>
+                        <div class="stat-number">25.5 tons</div>
+                        <div class="stat-change positive">+2.3 tons this month</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Active Auctions</h3>
+                        <div class="stat-number">8</div>
+                        <div class="stat-change neutral">5 ending soon</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Spent</h3>
+                        <div class="stat-number">₹2.5M</div>
+                        <div class="stat-change positive">Saved ₹25K this month</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Next Pickup</h3>
+                        <div class="stat-number">Tomorrow</div>
+                        <div class="stat-change neutral">500kg scheduled</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>Monthly Scrap Collection</h3>
+                    <canvas id="monthlyScrapChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Category Breakdown</h3>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Price Trends</h3>
+                    <canvas id="priceChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Environmental Impact</h3>
+                    <canvas id="impactChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="recent-transactions">
+                <h3>Recent Transactions</h3>
+                <div class="transaction-list">
+                    <div class="transaction-item">
+                        <div class="transaction-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <h4>Bulk Metal Purchase</h4>
+                            <p>From: MetalKing Industries</p>
+                        </div>
+                        <div class="transaction-amount negative">
+                            -₹50,000
+                        </div>
+                        <div class="transaction-status completed">
+                            Completed
+                        </div>
+                    </div>
+                    <!-- Add more transaction items -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Auctions Section -->
+        <div class="dashboard-section" id="auctionsSection">
+            <h2>Bulk Auctions</h2>
+            <div class="actions-bar">
+                <button class="primary-btn">
+                    <i class="fas fa-plus"></i> Create Auction
+                </button>
+                <div class="filter-group">
+                    <select id="auctionStatusFilter">
+                        <option value="all">All Auctions</option>
+                        <option value="active">Active</option>
+                        <option value="won">Won</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <select id="scrapTypeFilter">
+                        <option value="all">All Types</option>
+                        <option value="metal">Metal</option>
+                        <option value="paper">Paper</option>
+                        <option value="plastic">Plastic</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Live Auctions Grid -->
+            <div class="auctions-grid">
+                <div class="auction-card">
+                    <div class="auction-header">
+                        <span class="auction-id">#AUC1001</span>
+                        <span class="time-left">2h 15m left</span>
+                    </div>
+                    <div class="auction-content">
+                        <h3>Industrial Metal Scrap</h3>
+                        <div class="auction-details">
+                            <p><i class="fas fa-weight-hanging"></i> Quantity: 2 tons</p>
+                            <p><i class="fas fa-map-marker-alt"></i> Location: Mumbai</p>
+                            <p><i class="fas fa-user"></i> Seller: MetalKing Industries</p>
+                        </div>
+                        <div class="bid-section">
+                            <div class="current-bid">
+                                <span>Current Bid:</span>
+                                <span class="bid-amount">₹45,000</span>
+                            </div>
+                            <div class="bid-actions">
+                                <input type="number" placeholder="Your bid amount" class="bid-input">
+                                <button class="bid-btn">Place Bid</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Add more auction cards -->
+            </div>
+        </div>
+
+        <!-- Scrap Collection Section -->
+        <div class="dashboard-section" id="collectionSection">
+            <h2>Scrap Collection Management</h2>
+            
+            <!-- Collection Schedule -->
+            <div class="schedule-section">
+                <h3>Collection Schedule</h3>
+                <div class="schedule-calendar">
+                    <!-- Calendar implementation -->
+                </div>
+                <div class="upcoming-pickups">
+                    <div class="pickup-card">
+                        <div class="pickup-status scheduled"></div>
+                        <div class="pickup-details">
+                            <h4>Tomorrow - 10:00 AM</h4>
+                            <p>500kg Mixed Metal Scrap</p>
+                            <p>Location: Warehouse 1</p>
+                        </div>
+                        <div class="pickup-actions">
+                            <button class="reschedule-btn">Reschedule</button>
+                            <button class="cancel-btn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collection History -->
+            <div class="collection-history">
+                <h3>Collection History</h3>
+                <div class="history-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Quantity</th>
+                                <th>Collector</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Add table rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suppliers Section -->
+        <div class="dashboard-section" id="suppliersSection">
+            <h2>Supplier Management</h2>
+            
+            <!-- Supplier Search and Filters -->
+            <div class="supplier-filters">
+                <input type="text" placeholder="Search suppliers..." class="search-input">
+                <div class="filter-group">
+                    <select id="supplierTypeFilter">
+                        <option value="all">All Types</option>
+                        <option value="metal">Metal</option>
+                        <option value="paper">Paper</option>
+                        <option value="plastic">Plastic</option>
+                    </select>
+                    <select id="supplierRatingFilter">
+                        <option value="all">All Ratings</option>
+                        <option value="4">4+ Stars</option>
+                        <option value="3">3+ Stars</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Suppliers Grid -->
+            <div class="suppliers-grid">
+                <div class="supplier-card">
+                    <div class="supplier-header">
+                        <img src="placeholder.jpg" alt="Supplier Logo">
+                        <div class="supplier-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.8</span>
+                        </div>
+                    </div>
+                    <div class="supplier-content">
+                        <h3>MetalKing Industries</h3>
+                        <p><i class="fas fa-map-marker-alt"></i> Mumbai, India</p>
+                        <p><i class="fas fa-industry"></i> Metal Scrap</p>
+                        <div class="supplier-stats">
+                            <div class="stat">
+                                <span>Total Deals</span>
+                                <strong>156</strong>
+                            </div>
+                            <div class="stat">
+                                <span>Response Rate</span>
+                                <strong>98%</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="supplier-actions">
+                        <button class="contact-btn">Contact</button>
+                        <button class="view-btn">View Profile</button>
+                    </div>
+                </div>
+                <!-- Add more supplier cards -->
+            </div>
+        </div>
+
+        <!-- Payments Section -->
+        <div class="dashboard-section" id="paymentsSection">
+            <h2>Payments & Transactions</h2>
+            
+            <!-- Wallet Section -->
+            <div class="wallet-section">
+                <div class="wallet-card">
+                    <h3>Scrapify Wallet</h3>
+                    <div class="wallet-balance">
+                        <span>Available Balance</span>
+                        <h2>₹50,000</h2>
+                    </div>
+                    <div class="wallet-actions">
+                        <button class="add-funds-btn">Add Funds</button>
+                        <button class="withdraw-btn">Withdraw</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="transaction-history">
+                <h3>Transaction History</h3>
+                <div class="transaction-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Add transaction rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div class="dashboard-section" id="reportsSection">
+            <h2>Reports & Compliance</h2>
+            
+            <!-- Report Types -->
+            <div class="reports-grid">
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>Monthly Scrap Report</h3>
+                    <p>Detailed breakdown of collected and purchased scrap</p>
+                    <button class="download-btn">Download PDF</button>
+                </div>
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h3>Environmental Impact</h3>
+                    <p>Carbon savings and ecological contribution</p>
+                    <button class="download-btn">Download PDF</button>
+                </div>
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h3>Tax Documents</h3>
+                    <p>GST invoices and financial statements</p>
+                    <button class="download-btn">Download PDF</button>
+                </div>
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h3>Compliance Certificates</h3>
+                    <p>Waste management and environmental certificates</p>
+                    <button class="download-btn">Download PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-panel minimized" id="notificationsPanel">
+        <div class="notifications-header">
+            <h3>Notifications</h3>
+            <button class="mark-all-read" id="markAllRead">Mark all as read</button>
+        </div>
+        <div class="notifications-list">
+            <div class="notification-item unread">
+                <div class="notification-content">
+                    <p>New bulk auction ending in 2 hours</p>
+                    <button class="read-btn">Mark Read</button>
+                </div>
+                <small>Just now</small>
+            </div>
+            <!-- Add more notifications -->
+        </div>
+    </div>
+
+    <script src="../js/business.js"></script>
+</body>
+</html>
