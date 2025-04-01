@@ -9,11 +9,12 @@ require('dotenv').config();
 const User = require("./models/User");
 const listingRoutes = require("./routes/listingRoutes");
 const authRoutes = require("./routes/authRoutes");
+const messageRoutes = require('./routes/messageRoutes');
 
 const app = express();
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(cors({origin: '*'})); // Allow requests from frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
 
@@ -94,8 +95,9 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 // Use routes
-app.use('/api', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api', auth, listingRoutes);
+app.use('/api', auth, messageRoutes);
 
 // Serve frontend (from new code)
 app.get('*', (req, res) => {

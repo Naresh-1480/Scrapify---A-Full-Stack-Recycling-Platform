@@ -193,6 +193,15 @@
                             <label for="pickupLocation">Pickup Location</label>
                             <input type="text" id="pickupLocation" name="location" placeholder="Enter your address" required>
                         </div>
+                        <div class="form-group">
+                            <label for="scrapPhoto">Photo of Scrap</label>
+                            <div class="photo-upload-container">
+                                <input type="file" id="scrapPhoto" name="photo" accept="image/*" required>
+                                <div class="photo-preview">
+                                    <img id="photoPreview" src="#" alt="Preview" style="display: none;">
+                                </div>
+                            </div>
+                        </div>
                         <div class="form-actions">
                             <button type="submit" class="primary-btn">Create Listing</button>
                             <button type="reset" class="secondary-btn">Cancel</button>
@@ -206,7 +215,6 @@
                 <h1>Manage Listings</h1>
                 <div class="section-content">
                     <div class="listings-controls">
-                        <button class="primary-btn">Add New Listing</button>
                         <div class="listings-filter">
                             <label for="listingStatus">Filter by:</label>
                             <select id="listingStatus">
@@ -361,20 +369,20 @@
                     <div class="profile-container">
                         <div class="profile-sidebar">
                             <div class="profile-photo">
-                                <img src="/api/placeholder/150/150" alt="Profile Photo">
+                                <img src="/api/placeholder/150/150" alt="Profile Photo" id="profilePicture">
                                 <button class="change-photo-btn"><i class="fas fa-camera"></i></button>
                             </div>
                             <div class="profile-stats">
                                 <div class="stat">
-                                    <span class="stat-value">24</span>
+                                    <span class="stat-value" id="totalListings">0</span>
                                     <span class="stat-label">Listings</span>
                                 </div>
                                 <div class="stat">
-                                    <span class="stat-value">14</span>
-                                    <span class="stat-label">Sold</span>
+                                    <span class="stat-value" id="totalSales">0</span>
+                                    <span class="stat-label">Sales</span>
                                 </div>
                                 <div class="stat">
-                                    <span class="stat-value">4.8</span>
+                                    <span class="stat-value" id="rating">0</span>
                                     <span class="stat-label">Rating</span>
                                 </div>
                             </div>
@@ -382,56 +390,47 @@
                         <div class="profile-content">
                             <form class="profile-form">
                                 <div class="form-section">
-                                    <h3>Personal Information</h3>
+                                    <h3>Basic Profile Details</h3>
                                     <div class="form-group">
                                         <label for="fullName">Full Name</label>
-                                        <input type="text" id="fullName" value="Naresh Kumar">
+                                        <input type="text" id="fullName" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email">Email Address</label>
+                                        <input type="email" id="email" readonly>
                                     </div>
                                     <div class="form-group">
                                         <label for="phone">Phone Number</label>
-                                        <input type="tel" id="phone" value="+91 98765 43210">
+                                        <input type="tel" id="phone" placeholder="Enter your phone number">
                                     </div>
                                     <div class="form-group">
-                                        <label for="email">Email</label>
-                                        <input type="email" id="email" value="naresh@example.com">
-                                    </div>
-                                </div>
-                                <div class="form-section">
-                                    <h3>Address</h3>
-                                    <div class="form-group">
-                                        <label for="address">Street Address</label>
-                                        <input type="text" id="address" value="123 Main Street">
+                                        <label for="address">Address</label>
+                                        <textarea id="address" rows="3" placeholder="Enter your address"></textarea>
                                     </div>
                                     <div class="form-group">
-                                        <label for="city">City</label>
-                                        <input type="text" id="city" value="Mumbai">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="state">State</label>
-                                        <input type="text" id="state" value="Maharashtra">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="pincode">Pincode</label>
-                                        <input type="text" id="pincode" value="400001">
+                                        <label for="role">Account Type</label>
+                                        <input type="text" id="role" readonly>
                                     </div>
                                 </div>
                                 <div class="form-section">
-                                    <h3>Payment Information</h3>
+                                    <h3>Account & Security Settings</h3>
                                     <div class="form-group">
-                                        <label for="accountName">Account Holder Name</label>
-                                        <input type="text" id="accountName" value="Naresh Kumar">
+                                        <label for="currentPassword">Current Password</label>
+                                        <input type="password" id="currentPassword" placeholder="Enter current password">
                                     </div>
                                     <div class="form-group">
-                                        <label for="accountNumber">Account Number</label>
-                                        <input type="text" id="accountNumber" value="XXXX XXXX 1234">
+                                        <label for="newPassword">New Password</label>
+                                        <input type="password" id="newPassword" placeholder="Enter new password">
                                     </div>
                                     <div class="form-group">
-                                        <label for="bankName">Bank Name</label>
-                                        <input type="text" id="bankName" value="State Bank of India">
+                                        <label for="confirmPassword">Confirm New Password</label>
+                                        <input type="password" id="confirmPassword" placeholder="Confirm new password">
                                     </div>
                                     <div class="form-group">
-                                        <label for="ifsc">IFSC Code</label>
-                                        <input type="text" id="ifsc" value="SBIN0001234">
+                                        <label>KYC Verification Status</label>
+                                        <div class="kyc-status">
+                                            <span id="kycStatus" class="status-badge pending">Pending</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-actions">

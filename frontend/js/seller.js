@@ -137,9 +137,14 @@ function setupLogoutHandler() {
     const logoutBtn = document.querySelector('.logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
+            console.log("logout button clicked");
             if (confirm('Are you sure you want to logout?')) {
-                // Add logout logic here
-                window.location.href = 'index.html';
+                // Clear authentication token
+                localStorage.removeItem('token');
+                // Clear any other user-related data
+                localStorage.removeItem('userRole');
+                // Redirect to login page
+                window.location.href = '../pages/login.html';
             }
         });
     }
@@ -149,7 +154,25 @@ function setupLogoutHandler() {
 function setupFormHandlers() {
     console.log('Setting up form handlers...');
     const sellForm = document.getElementById('sellScrapForm');
+    const photoInput = document.getElementById('scrapPhoto');
+    const photoPreview = document.getElementById('photoPreview');
+    
     console.log('Form element:', sellForm);
+    
+    // Add photo preview functionality
+    if (photoInput) {
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    photoPreview.src = e.target.result;
+                    photoPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
     
     if (sellForm) {
         sellForm.addEventListener('submit', async (e) => {
@@ -160,12 +183,22 @@ function setupFormHandlers() {
             
             try {
                 const formData = new FormData(sellForm);
+                const photoFile = formData.get('photo');
+                
+                // Convert photo to base64
+                const photoBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(photoFile);
+                });
+                
                 const data = {
                     category: formData.get('category'),
                     title: formData.get('title'),
                     description: formData.get('description'),
                     quantity: parseFloat(formData.get('quantity')),
                     location: formData.get('location'),
+                    photo: photoBase64,
                     price: calculatePrice(formData.get('category'), parseFloat(formData.get('quantity')))
                 };
                 
@@ -197,6 +230,7 @@ function setupFormHandlers() {
                 if (response.ok) {
                     alert('Listing created successfully!');
                     sellForm.reset();
+                    photoPreview.style.display = 'none';
                     // Fetch updated listings
                     fetchListings();
                 } else {
@@ -264,6 +298,9 @@ async function fetchListings() {
                     const listingElement = document.createElement('div');
                     listingElement.classList.add('listing-card');
                     listingElement.innerHTML = `
+                        <div class="listing-image">
+                            <img src="${listing.photo}" alt="${listing.title}">
+                        </div>
                         <h3>${listing.title}</h3>
                         <p>${listing.description}</p>
                         <div class="listing-details">
@@ -295,11 +332,33 @@ async function fetchListings() {
 function setupListingActionButtons() {
     // Edit button functionality 
     document.querySelectorAll('.edit-listing-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {
             const listingId = e.target.getAttribute('data-id');
-            // Implement edit functionality here
-            console.log('Edit listing with ID:', listingId);
-            alert('Edit functionality will be implemented soon.');
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Please login to edit a listing');
+                }
+
+                const response = await fetch(`http://localhost:5000/api/listings/${listingId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.msg || 'Failed to fetch listing details');
+                }
+
+                const listing = await response.json();
+                showEditModal(listing);
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message || 'Error fetching listing details');
+            }
         });
     });
     
@@ -309,22 +368,186 @@ function setupListingActionButtons() {
             const listingId = e.target.getAttribute('data-id');
             if (confirm('Are you sure you want to delete this listing?')) {
                 try {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        throw new Error('Please login to delete a listing');
+                    }
+
                     const response = await fetch(`http://localhost:5000/api/listings/${listingId}`, {
-                        method: 'DELETE'
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
                     });
                     
                     if (response.ok) {
                         alert('Listing deleted successfully!');
                         fetchListings(); // Refresh the listings
                     } else {
-                        alert('Error deleting listing. Please try again.');
+                        const errorData = await response.json();
+                        throw new Error(errorData.msg || 'Error deleting listing');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('Error deleting listing. Please try again.');
+                    alert(error.message || 'Error deleting listing. Please try again.');
                 }
             }
         });
+    });
+}
+
+// Function to show edit modal
+function showEditModal(listing) {
+    // Create modal HTML
+    const modalHTML = `
+        <div class="modal" id="editListingModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Listing</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <form id="editListingForm">
+                    <input type="hidden" name="id" value="${listing._id}">
+                    <div class="form-group">
+                        <label for="editCategory">Category</label>
+                        <select id="editCategory" name="category" required>
+                            <option value="paper" ${listing.category === 'paper' ? 'selected' : ''}>Paper Waste</option>
+                            <option value="plastic" ${listing.category === 'plastic' ? 'selected' : ''}>Plastic</option>
+                            <option value="metal" ${listing.category === 'metal' ? 'selected' : ''}>Metal Scrap</option>
+                            <option value="electronics" ${listing.category === 'electronics' ? 'selected' : ''}>Electronic Waste</option>
+                            <option value="glass" ${listing.category === 'glass' ? 'selected' : ''}>Glass</option>
+                            <option value="other" ${listing.category === 'other' ? 'selected' : ''}>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTitle">Title</label>
+                        <input type="text" id="editTitle" name="title" value="${listing.title}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDescription">Description</label>
+                        <textarea id="editDescription" name="description" required>${listing.description}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editQuantity">Quantity (kg)</label>
+                        <input type="number" id="editQuantity" name="quantity" value="${listing.quantity}" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editLocation">Location</label>
+                        <input type="text" id="editLocation" name="location" value="${listing.location}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPhoto">Photo</label>
+                        <div class="photo-upload-container">
+                            <input type="file" id="editPhoto" name="photo" accept="image/*">
+                            <div class="photo-preview">
+                                <img id="editPhotoPreview" src="${listing.photo}" alt="Current photo">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="primary-btn">Save Changes</button>
+                        <button type="button" class="secondary-btn close-modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Setup modal functionality
+    const modal = document.getElementById('editListingModal');
+    const closeButtons = modal.querySelectorAll('.close-modal');
+    const editForm = document.getElementById('editListingForm');
+    const photoInput = document.getElementById('editPhoto');
+    const photoPreview = document.getElementById('editPhotoPreview');
+
+    // Close modal when clicking close buttons
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            modal.remove();
+        });
+    });
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+
+    // Handle photo preview
+    if (photoInput) {
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    photoPreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Handle form submission
+    editForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const loader = document.querySelector('.loader');
+        if (loader) loader.classList.remove('hidden');
+
+        try {
+            const formData = new FormData(editForm);
+            const photoFile = formData.get('photo');
+            let photoBase64 = listing.photo; // Keep existing photo if no new one is uploaded
+
+            // If a new photo is uploaded, convert it to base64
+            if (photoFile.size > 0) {
+                photoBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(photoFile);
+                });
+            }
+
+            const data = {
+                category: formData.get('category'),
+                title: formData.get('title'),
+                description: formData.get('description'),
+                quantity: parseFloat(formData.get('quantity')),
+                location: formData.get('location'),
+                photo: photoBase64
+            };
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Please login to edit a listing');
+            }
+
+            const response = await fetch(`http://localhost:5000/api/listings/${listing._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert('Listing updated successfully!');
+                modal.remove();
+                fetchListings(); // Refresh the listings
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.msg || 'Error updating listing');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message || 'Error updating listing. Please try again.');
+        } finally {
+            if (loader) loader.classList.add('hidden');
+        }
     });
 }
 
@@ -497,86 +720,213 @@ function setupChatFunctionality() {
     const chatInput = document.querySelector('.chat-input input');
     const sendBtn = document.querySelector('.send-btn');
     const chatMessages = document.querySelector('.chat-messages');
+    const conversationsList = document.querySelector('.conversation-list');
+    const messagesSearch = document.querySelector('.messages-search input');
     
-    if (!chatInput || !sendBtn || !chatMessages) return;
+    if (!chatInput || !sendBtn || !chatMessages || !conversationsList) return;
     
-    // Fix for the Enter key press event
+    let currentConversation = null;
+    
+    // Load conversations
+    async function loadConversations() {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Please login to view messages');
+            }
+
+            const response = await fetch('http://localhost:5000/api/conversations', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch conversations');
+            }
+
+            const conversations = await response.json();
+            displayConversations(conversations);
+        } catch (error) {
+            console.error('Error loading conversations:', error);
+            alert(error.message);
+        }
+    }
+
+    // Display conversations in the sidebar
+    function displayConversations(conversations) {
+        conversationsList.innerHTML = '';
+        
+        conversations.forEach(conv => {
+            const conversationElement = document.createElement('div');
+            conversationElement.classList.add('conversation');
+            conversationElement.dataset.userId = conv._id;
+            
+            const time = new Date(conv.lastMessageTime).toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            conversationElement.innerHTML = `
+                <img src="/api/placeholder/40/40" alt="User" class="user-avatar">
+                <div class="conversation-preview">
+                    <h4>${conv.user.name}</h4>
+                    <p>${conv.lastMessage}</p>
+                </div>
+                <div class="conversation-meta">
+                    <span class="time">${time}</span>
+                    ${conv.unreadCount > 0 ? `<span class="unread-count">${conv.unreadCount}</span>` : ''}
+                </div>
+            `;
+            
+            conversationsList.appendChild(conversationElement);
+        });
+    }
+
+    // Load messages for a specific conversation
+    async function loadMessages(userId) {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Please login to view messages');
+            }
+
+            const response = await fetch(`http://localhost:5000/api/messages/${userId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch messages');
+            }
+
+            const messages = await response.json();
+            displayMessages(messages);
+            currentConversation = userId;
+        } catch (error) {
+            console.error('Error loading messages:', error);
+            alert(error.message);
+        }
+    }
+
+    // Display messages in the chat window
+    function displayMessages(messages) {
+        chatMessages.innerHTML = '';
+        
+        messages.forEach(message => {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(message.sender === currentConversation ? 'received' : 'sent');
+            
+            const time = new Date(message.createdAt).toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            messageElement.innerHTML = `
+                <p>${message.content}</p>
+                <span class="message-time">${time}</span>
+            `;
+            
+            chatMessages.appendChild(messageElement);
+        });
+        
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Send a new message
+    async function sendMessage() {
+        const message = chatInput.value.trim();
+        if (!message || !currentConversation) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Please login to send messages');
+            }
+
+            const response = await fetch('http://localhost:5000/api/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    receiver: currentConversation,
+                    content: message
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send message');
+            }
+
+            // Clear input and reload messages
+            chatInput.value = '';
+            loadMessages(currentConversation);
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert(error.message);
+        }
+    }
+    
+    // Event Listeners
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && chatInput.value.trim() !== '') {
-            e.preventDefault(); // Prevent form submission
+            e.preventDefault();
             sendMessage();
         }
     });
     
-    // Fix for the send button click event
     sendBtn.addEventListener('click', () => {
         if (chatInput.value.trim() !== '') {
             sendMessage();
         }
     });
-    
-    function sendMessage() {
-        const message = chatInput.value.trim();
-        if (message === '') return;
-        
-        const now = new Date();
-        const timeOptions = { hour: '2-digit', minute: '2-digit' };
-        const timeString = now.toLocaleTimeString('en-IN', timeOptions);
-        
-        // Create and append the new message element
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message', 'sent');
-        messageElement.innerHTML = `
-            <p>${message}</p>
-            <span class="message-time">${timeString}</span>
-        `;
-        
-        chatMessages.appendChild(messageElement);
-        
-        // Auto-scroll to the bottom of the chat
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        
-        // Clear the input field
-        chatInput.value = '';
-        
-        // Focus the input field for the next message
-        chatInput.focus();
-        
-        // Simulate a response (for demo purposes)
-        setTimeout(() => {
-            const responseElement = document.createElement('div');
-            responseElement.classList.add('message', 'received');
-            responseElement.innerHTML = `
-                <p>Thanks for your message. I'll get back to you soon.</p>
-                <span class="message-time">${timeString}</span>
-            `;
-            chatMessages.appendChild(responseElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 1500);
-    }
-    
-    // Add functionality to conversation list items
-    const conversations = document.querySelectorAll('.conversation');
-    conversations.forEach(conversation => {
-        conversation.addEventListener('click', () => {
+
+    // Conversation click handler
+    conversationsList.addEventListener('click', (e) => {
+        const conversation = e.target.closest('.conversation');
+        if (conversation) {
+            const userId = conversation.dataset.userId;
+            
             // Update active conversation
-            conversations.forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.conversation').forEach(c => c.classList.remove('active'));
             conversation.classList.add('active');
             
-            // Update chat header with selected conversation user info
+            // Update chat header
             const userName = conversation.querySelector('h4').textContent;
             const chatHeader = document.querySelector('.chat-header .chat-user h3');
             if (chatHeader) {
                 chatHeader.textContent = userName;
             }
             
-            // Clear unread count
-            const unreadCount = conversation.querySelector('.unread-count');
-            if (unreadCount) {
-                unreadCount.remove();
+            // Load messages
+            loadMessages(userId);
+        }
+    });
+
+    // Search functionality
+    messagesSearch.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const conversations = document.querySelectorAll('.conversation');
+        
+        conversations.forEach(conv => {
+            const userName = conv.querySelector('h4').textContent.toLowerCase();
+            const lastMessage = conv.querySelector('p').textContent.toLowerCase();
+            
+            if (userName.includes(searchTerm) || lastMessage.includes(searchTerm)) {
+                conv.style.display = 'flex';
+            } else {
+                conv.style.display = 'none';
             }
         });
     });
+
+    // Initial load
+    loadConversations();
 }
 
 // Handle mobile responsiveness
@@ -663,8 +1013,181 @@ function setupMarkAllReadButton() {
     }
 }
 
+// Profile Management
+async function loadProfileData() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Please login to view profile');
+        }
+
+        const response = await fetch('http://localhost:5000/api/auth/profile', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch profile data');
+        }
+
+        const userData = await response.json();
+        displayProfileData(userData);
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        alert(error.message);
+    }
+}
+
+function displayProfileData(userData) {
+    // Display basic profile details
+    document.getElementById('fullName').value = `${userData.firstName} ${userData.lastName}`;
+    document.getElementById('email').value = userData.email;
+    document.getElementById('phone').value = userData.phone || '';
+    document.getElementById('address').value = userData.address || '';
+    document.getElementById('role').value = userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
+    
+    // Set profile picture if available
+    const profilePicture = document.getElementById('profilePicture');
+    if (profilePicture && userData.photo) {
+        profilePicture.src = userData.photo;
+    }
+    
+    // Set KYC status
+    const kycStatus = document.getElementById('kycStatus');
+    if (kycStatus) {
+        kycStatus.textContent = userData.kycStatus || 'Not Submitted';
+        kycStatus.className = `status-badge ${userData.kycStatus?.toLowerCase().replace(' ', '-') || 'not-submitted'}`;
+    }
+
+    // Update profile stats
+    document.getElementById('totalListings').textContent = userData.totalListings || '0';
+    document.getElementById('totalSales').textContent = userData.totalSales || '₹0';
+    document.getElementById('rating').textContent = userData.rating || '0';
+}
+
+// Handle profile form submission
+function setupProfileForm() {
+    const profileForm = document.querySelector('.profile-form');
+    if (!profileForm) return;
+
+    profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const loader = document.querySelector('.loader');
+        if (loader) loader.classList.remove('hidden');
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Please login to update profile');
+            }
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+
+            // Validate password change if attempted
+            if (newPassword || currentPassword || confirmPassword) {
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    throw new Error('Please fill all password fields');
+                }
+                if (newPassword !== confirmPassword) {
+                    throw new Error('New passwords do not match');
+                }
+            }
+
+            const response = await fetch('http://localhost:5000/api/auth/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    phone,
+                    address,
+                    currentPassword,
+                    newPassword
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.msg || 'Failed to update profile');
+            }
+
+            alert('Profile updated successfully!');
+            // Clear password fields
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            // Reload profile data
+            loadProfileData();
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message);
+        } finally {
+            if (loader) loader.classList.add('hidden');
+        }
+    });
+}
+
+// Handle profile picture change
+function setupProfilePictureChange() {
+    const changePhotoBtn = document.querySelector('.change-photo-btn');
+    const profilePicture = document.getElementById('profilePicture');
+    
+    if (!changePhotoBtn || !profilePicture) return;
+
+    changePhotoBtn.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Please login to update profile picture');
+                }
+
+                const formData = new FormData();
+                formData.append('photo', file);
+
+                const response = await fetch('http://localhost:5000/api/auth/profile/photo', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update profile picture');
+                }
+
+                const data = await response.json();
+                profilePicture.src = data.photoUrl;
+                alert('Profile picture updated successfully!');
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message);
+            }
+        };
+
+        input.click();
+    });
+}
+
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    // Set up logout handler first
+    setupLogoutHandler();
+    
     // Populate activity list
     populateActivityList();
     
@@ -677,9 +1200,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Set up mobile navigation
     setupMobileNavigation();
-    
-    // Set up logout handler
-    setupLogoutHandler();
     
     // Set up form handlers
     setupFormHandlers();
@@ -702,6 +1222,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fetch and display listings
     fetchListings();
+
+    // Load profile data
+    loadProfileData();
+    
+    // Set up profile form
+    setupProfileForm();
+    
+    // Set up profile picture change
+    setupProfilePictureChange();
 });
 
 // Set up resize event listener for responsive adjustments
