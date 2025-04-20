@@ -6,10 +6,6 @@ const ListingSchema = new mongoose.Schema({
         required: true,
         enum: ['paper', 'plastic', 'metal', 'electronics', 'glass', 'other']
     },
-    title: {
-        type: String,
-        required: true
-    },
     description: {
         type: String,
         required: true
@@ -18,13 +14,27 @@ const ListingSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    location: {
+    addressLine: {
+        type: String,
+        required: true
+    },
+    city: {
+        type: String,
+        required: true,
+        enum: ['MUMBAI', 'PUNE', 'NAVI MUMBAI']
+    },
+    pincode: {
         type: String,
         required: true
     },
     photo: {
         type: String,
         required: true
+    },
+    status: {
+        type: String,
+        enum: ['in_review', 'active', 'sold'],
+        default: 'in_review'
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,

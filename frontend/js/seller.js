@@ -194,11 +194,13 @@ function setupFormHandlers() {
                 
                 const data = {
                     category: formData.get('category'),
-                    title: formData.get('title'),
                     description: formData.get('description'),
                     quantity: parseFloat(formData.get('quantity')),
-                    location: formData.get('location'),
+                    addressLine: formData.get('addressLine'),
+                    city: formData.get('city'),
+                    pincode: formData.get('pincode'),
                     photo: photoBase64,
+                    status: 'in_review', // Set initial status
                     price: calculatePrice(formData.get('category'), parseFloat(formData.get('quantity')))
                 };
                 
@@ -283,6 +285,7 @@ async function fetchListings() {
         if (response.ok) {
             const listings = await response.json();
             const listingsContainer = document.querySelector('.listings-grid');
+            const statusFilter = document.getElementById('listingStatus');
             
             if (listingsContainer) {
                 // Clear existing content
@@ -293,21 +296,67 @@ async function fetchListings() {
                     return;
                 }
 
+                // Filter listings based on status
+                let filteredListings = listings;
+                if (statusFilter && statusFilter.value !== 'all') {
+                    filteredListings = listings.filter(listing => {
+                        switch(statusFilter.value) {
+                            case 'active':
+                                return listing.status === 'active';
+                            case 'review':
+                                return listing.status === 'in_review';
+                            case 'sold':
+                                return listing.status === 'sold';
+                            default:
+                                return true;
+                        }
+                    });
+                }
+
                 // Create listing cards for each listing
-                listings.forEach(listing => {
+                filteredListings.forEach(listing => {
                     const listingElement = document.createElement('div');
                     listingElement.classList.add('listing-card');
+                    
+                    // Calculate price based on category and quantity
+                    const rates = {
+                        'paper': 12,
+                        'plastic': 15,
+                        'metal': 35,
+                        'electronics': 45,
+                        'glass': 8,
+                        'other': 10
+                    };
+                    const pricePerKg = rates[listing.category] || 10;
+                    const totalPrice = pricePerKg * listing.quantity;
+                    
+                    // Determine status class and text
+                    let statusClass = 'status-review';
+                    let statusText = 'In Review';
+                    if (listing.status === 'active') {
+                        statusClass = 'status-active';
+                        statusText = 'Active';
+                    } else if (listing.status === 'sold') {
+                        statusClass = 'status-sold';
+                        statusText = 'Sold';
+                    }
+                    
                     listingElement.innerHTML = `
                         <div class="listing-image">
-                            <img src="${listing.photo}" alt="${listing.title}">
+                            <img src="${listing.photo}" alt="${listing.category}">
                         </div>
-                        <h3>${listing.title}</h3>
-                        <p>${listing.description}</p>
-                        <div class="listing-details">
-                            <span class="listing-category">Category: ${listing.category}</span>
-                            <span class="listing-quantity">Quantity: ${listing.quantity} kg</span>
+                        <h3 class="category-heading">${listing.category.toUpperCase()}</h3>
+                        <p class="listing-description">${listing.description}</p>
+                        <div class="listing-info">
+                            <div class="quantity-price">
+                                <span class="quantity">${listing.quantity} kg</span>
+                                <span class="price">₹${totalPrice}</span>
+                            </div>
+                            <div class="status-location">
+                                <span class="status ${statusClass}">${statusText}</span>
+                                <span class="location">${listing.city}</span>
+                            </div>
                         </div>
-                        <p class="listing-location">Location: ${listing.location}</p>
                         <div class="listing-actions">
                             <button class="edit-listing-btn" data-id="${listing._id}">Edit</button>
                             <button class="delete-listing-btn" data-id="${listing._id}">Delete</button>
@@ -326,74 +375,6 @@ async function fetchListings() {
     } catch (error) {
         console.error('Error fetching listings:', error);
     }
-}
-
-// Add a function to handle the listing action buttons
-function setupListingActionButtons() {
-    // Edit button functionality 
-    document.querySelectorAll('.edit-listing-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const listingId = e.target.getAttribute('data-id');
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    throw new Error('Please login to edit a listing');
-                }
-
-                const response = await fetch(`http://localhost:5000/api/listings/${listingId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.msg || 'Failed to fetch listing details');
-                }
-
-                const listing = await response.json();
-                showEditModal(listing);
-            } catch (error) {
-                console.error('Error:', error);
-                alert(error.message || 'Error fetching listing details');
-            }
-        });
-    });
-    
-    // Delete button functionality
-    document.querySelectorAll('.delete-listing-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const listingId = e.target.getAttribute('data-id');
-            if (confirm('Are you sure you want to delete this listing?')) {
-                try {
-                    const token = localStorage.getItem('token');
-                    if (!token) {
-                        throw new Error('Please login to delete a listing');
-                    }
-
-                    const response = await fetch(`http://localhost:5000/api/listings/${listingId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        alert('Listing deleted successfully!');
-                        fetchListings(); // Refresh the listings
-                    } else {
-                        const errorData = await response.json();
-                        throw new Error(errorData.msg || 'Error deleting listing');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert(error.message || 'Error deleting listing. Please try again.');
-                }
-            }
-        });
-    });
 }
 
 // Function to show edit modal
@@ -420,10 +401,6 @@ function showEditModal(listing) {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="editTitle">Title</label>
-                        <input type="text" id="editTitle" name="title" value="${listing.title}" required>
-                    </div>
-                    <div class="form-group">
                         <label for="editDescription">Description</label>
                         <textarea id="editDescription" name="description" required>${listing.description}</textarea>
                     </div>
@@ -432,8 +409,29 @@ function showEditModal(listing) {
                         <input type="number" id="editQuantity" name="quantity" value="${listing.quantity}" min="1" required>
                     </div>
                     <div class="form-group">
-                        <label for="editLocation">Location</label>
-                        <input type="text" id="editLocation" name="location" value="${listing.location}" required>
+                        <label for="editAddressLine">Address Line</label>
+                        <input type="text" id="editAddressLine" name="addressLine" value="${listing.addressLine}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPincode">Pincode *</label>
+                        <input type="text" id="editPincode" name="pincode" value="${listing.pincode}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCity">City *</label>
+                        <select id="editCity" name="city" required>
+                            <option value="">Select City</option>
+                            <option value="MUMBAI" ${listing.city === 'MUMBAI' ? 'selected' : ''}>MUMBAI</option>
+                            <option value="PUNE" ${listing.city === 'PUNE' ? 'selected' : ''}>PUNE</option>
+                            <option value="NAVI MUMBAI" ${listing.city === 'NAVI MUMBAI' ? 'selected' : ''}>NAVI MUMBAI</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editStatus">Status</label>
+                        <select id="editStatus" name="status" required>
+                            <option value="in_review" ${listing.status === 'in_review' ? 'selected' : ''}>In Review</option>
+                            <option value="active" ${listing.status === 'active' ? 'selected' : ''}>Active</option>
+                            <option value="sold" ${listing.status === 'sold' ? 'selected' : ''}>Sold</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="editPhoto">Photo</label>
@@ -513,11 +511,13 @@ function showEditModal(listing) {
 
             const data = {
                 category: formData.get('category'),
-                title: formData.get('title'),
                 description: formData.get('description'),
                 quantity: parseFloat(formData.get('quantity')),
-                location: formData.get('location'),
-                photo: photoBase64
+                addressLine: formData.get('addressLine'),
+                city: formData.get('city'),
+                pincode: formData.get('pincode'),
+                photo: photoBase64,
+                status: formData.get('status')
             };
 
             const token = localStorage.getItem('token');
@@ -548,6 +548,74 @@ function showEditModal(listing) {
         } finally {
             if (loader) loader.classList.add('hidden');
         }
+    });
+}
+
+// Add a function to handle the listing action buttons
+function setupListingActionButtons() {
+    // Edit button functionality 
+    document.querySelectorAll('.edit-listing-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const listingId = e.target.getAttribute('data-id');
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Please login to edit a listing');
+                }
+
+                const response = await fetch(`http://localhost:5000/api/listings/${listingId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.msg || 'Failed to fetch listing details');
+                }
+
+                const listing = await response.json();
+                showEditModal(listing);
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message || 'Error fetching listing details');
+            }
+        });
+    });
+    
+    // Delete button functionality
+    document.querySelectorAll('.delete-listing-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const listingId = e.target.getAttribute('data-id');
+            if (confirm('Are you sure you want to delete this listing?')) {
+                try {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        throw new Error('Please login to delete a listing');
+                    }
+
+                    const response = await fetch(`http://localhost:5000/api/listings/${listingId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        alert('Listing deleted successfully!');
+                        fetchListings(); // Refresh the listings
+                    } else {
+                        const errorData = await response.json();
+                        throw new Error(errorData.msg || 'Error deleting listing');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert(error.message || 'Error deleting listing. Please try again.');
+                }
+            }
+        });
     });
 }
 
@@ -1032,6 +1100,14 @@ async function loadProfileData() {
         }
 
         const userData = await response.json();
+        
+        // Set user's first name in navbar
+        const userLoginElement = document.getElementById('user-login');
+        if (userLoginElement) {
+            userLoginElement.textContent = userData.firstName;
+        }
+
+        // Display profile data
         displayProfileData(userData);
     } catch (error) {
         console.error('Error loading profile:', error);
@@ -1041,11 +1117,19 @@ async function loadProfileData() {
 
 function displayProfileData(userData) {
     // Display basic profile details
-    document.getElementById('fullName').value = `${userData.firstName} ${userData.lastName}`;
-    document.getElementById('email').value = userData.email;
-    document.getElementById('phone').value = userData.phone || '';
-    document.getElementById('address').value = userData.address || '';
-    document.getElementById('role').value = userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
+    const firstNameInput = document.getElementById('firstName');
+    const lastNameInput = document.getElementById('lastName');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const addressInput = document.getElementById('address');
+    const roleInput = document.getElementById('role');
+
+    if (firstNameInput) firstNameInput.value = userData.firstName || '';
+    if (lastNameInput) lastNameInput.value = userData.lastName || '';
+    if (emailInput) emailInput.value = userData.email || '';
+    if (phoneInput) phoneInput.value = userData.phone || '';
+    if (addressInput) addressInput.value = userData.address || '';
+    if (roleInput) roleInput.value = userData.role ? userData.role.charAt(0).toUpperCase() + userData.role.slice(1) : '';
     
     // Set profile picture if available
     const profilePicture = document.getElementById('profilePicture');
@@ -1061,9 +1145,13 @@ function displayProfileData(userData) {
     }
 
     // Update profile stats
-    document.getElementById('totalListings').textContent = userData.totalListings || '0';
-    document.getElementById('totalSales').textContent = userData.totalSales || '₹0';
-    document.getElementById('rating').textContent = userData.rating || '0';
+    const totalListings = document.getElementById('totalListings');
+    const totalSales = document.getElementById('totalSales');
+    const rating = document.getElementById('rating');
+
+    if (totalListings) totalListings.textContent = userData.totalListings || '0';
+    if (totalSales) totalSales.textContent = userData.totalSales || '₹0';
+    if (rating) rating.textContent = userData.rating || '0';
 }
 
 // Handle profile form submission
@@ -1082,11 +1170,21 @@ function setupProfileForm() {
                 throw new Error('Please login to update profile');
             }
 
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            const phone = document.getElementById('phone').value;
-            const address = document.getElementById('address').value;
+
+            // Debug log the form data
+            console.log('Profile form data:', {
+                firstName,
+                lastName,
+                phone,
+                address
+            });
 
             // Validate password change if attempted
             if (newPassword || currentPassword || confirmPassword) {
@@ -1098,34 +1196,56 @@ function setupProfileForm() {
                 }
             }
 
+            const requestData = {
+                firstName,
+                lastName,
+                phone,
+                address,
+                currentPassword: currentPassword || undefined,
+                newPassword: newPassword || undefined
+            };
+
+            // Debug log the request data
+            console.log('Sending profile update request:', requestData);
+
             const response = await fetch('http://localhost:5000/api/auth/profile', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    phone,
-                    address,
-                    currentPassword,
-                    newPassword
-                })
+                body: JSON.stringify(requestData)
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
+                console.error('Profile update error response:', errorData);
                 throw new Error(errorData.msg || 'Failed to update profile');
             }
 
+            const updatedUser = await response.json();
+            
+            // Debug log the response
+            console.log('Profile update successful:', updatedUser);
+            
+            // Update the displayed data with the new values
+            displayProfileData(updatedUser);
+            
+            // Update the navbar with the new first name
+            const userLoginElement = document.getElementById('user-login');
+            if (userLoginElement) {
+                userLoginElement.textContent = updatedUser.firstName;
+            }
+
             alert('Profile updated successfully!');
+            
             // Clear password fields
             document.getElementById('currentPassword').value = '';
             document.getElementById('newPassword').value = '';
             document.getElementById('confirmPassword').value = '';
-            // Reload profile data
-            loadProfileData();
+            
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Profile update error:', error);
             alert(error.message);
         } finally {
             if (loader) loader.classList.add('hidden');
@@ -1183,10 +1303,23 @@ function setupProfilePictureChange() {
     });
 }
 
+// Add event listener for status filter
+function setupStatusFilter() {
+    const statusFilter = document.getElementById('listingStatus');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', () => {
+            fetchListings();
+        });
+    }
+}
+
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Set up logout handler first
     setupLogoutHandler();
+    
+    // Load profile data first to ensure user info is displayed
+    loadProfileData();
     
     // Populate activity list
     populateActivityList();
@@ -1222,15 +1355,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fetch and display listings
     fetchListings();
-
-    // Load profile data
-    loadProfileData();
     
     // Set up profile form
     setupProfileForm();
     
     // Set up profile picture change
     setupProfilePictureChange();
+
+    // Set up status filter
+    setupStatusFilter();
 });
 
 // Set up resize event listener for responsive adjustments

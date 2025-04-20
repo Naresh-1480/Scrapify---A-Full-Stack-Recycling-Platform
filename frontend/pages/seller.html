@@ -178,10 +178,6 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="scrapTitle">Title</label>
-                            <input type="text" id="scrapTitle" name="title" placeholder="Enter a descriptive title" required>
-                        </div>
-                        <div class="form-group">
                             <label for="scrapDescription">Description</label>
                             <textarea id="scrapDescription" name="description" placeholder="Describe your scrap in detail" rows="4" required></textarea>
                         </div>
@@ -190,8 +186,21 @@
                             <input type="number" id="scrapQuantity" name="quantity" placeholder="Enter quantity" min="1" required>
                         </div>
                         <div class="form-group">
-                            <label for="pickupLocation">Pickup Location</label>
-                            <input type="text" id="pickupLocation" name="location" placeholder="Enter your address" required>
+                            <label for="addressLine">Address Line</label>
+                            <input type="text" id="addressLine" name="addressLine" placeholder="Enter your street address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pincode">Pincode *</label>
+                            <input type="text" id="pincode" name="pincode" placeholder="Enter pincode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="city">City *</label>
+                            <select id="city" name="city" required>
+                                <option value="">Select City</option>
+                                <option value="MUMBAI">MUMBAI</option>
+                                <option value="PUNE">PUNE</option>
+                                <option value="NAVI MUMBAI">NAVI MUMBAI</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="scrapPhoto">Photo of Scrap</label>
@@ -392,8 +401,12 @@
                                 <div class="form-section">
                                     <h3>Basic Profile Details</h3>
                                     <div class="form-group">
-                                        <label for="fullName">Full Name</label>
-                                        <input type="text" id="fullName" readonly>
+                                        <label for="firstName">First Name</label>
+                                        <input type="text" id="firstName" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="lastName">Last Name</label>
+                                        <input type="text" id="lastName" required>
                                     </div>
                                     <div class="form-group">
                                         <label for="email">Email Address</label>

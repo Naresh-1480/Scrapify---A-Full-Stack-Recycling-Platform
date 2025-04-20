@@ -1,37 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Menu Item Click - updated to show/hide content sections
     const menuItems = document.querySelectorAll('.menu-item');
-    
-    // Create content sections for each menu item
-    const contentSections = {
-        'Dashboard': createDashboardContent(),
-        'Manage Sellers': createSellerManagementContent(),
-        'Manage Buyers': createBuyerManagementContent(),
-        'Scrap Listings': createScrapListingsContent(),
-        'Transactions': createTransactionsContent(),
-        'Disputes': createDisputesContent(),
-        'Reports & Analytics': createReportsContent(),
-        'Settings': createSettingsContent()
+    const sectionMap = {
+        'Dashboard': 'dashboard',
+        'Manage Sellers': 'manage-sellers',
+        'Manage Buyers': 'manage-buyers',
+        'Scrap Listings': 'scrap-listings',
+        'Transactions': 'transactions',
+        'Disputes': 'disputes',
+        'Reports & Analytics': 'reports',
+        'Settings': 'settings'
     };
-    
-    // Add content sections to main content area
-    const mainContent = document.querySelector('.main-content');
-    const topBar = document.querySelector('.top-bar');
-    const existingContent = document.querySelectorAll('.main-content > *:not(.top-bar)');
-    
-    // Store existing dashboard content
-    const dashboardContent = document.createElement('div');
-    dashboardContent.className = 'dashboard-content';
-    existingContent.forEach(el => {
-        dashboardContent.appendChild(el.cloneNode(true));
-    });
-    contentSections['Dashboard'] = dashboardContent;
-    
-    // Clear existing content except top bar
-    existingContent.forEach(el => el.remove());
-    
-    // Add dashboard content initially
-    mainContent.appendChild(contentSections['Dashboard']);
     
     // Set up menu click handlers
     menuItems.forEach(item => {
@@ -48,101 +27,233 @@ document.addEventListener('DOMContentLoaded', function() {
             menuItems.forEach(i => i.classList.remove('active'));
             this.classList.add('active');
             
-            // Clear main content except top bar
-            const currentContent = document.querySelectorAll('.main-content > *:not(.top-bar)');
-            currentContent.forEach(el => el.remove());
+            // Hide all sections
+            document.querySelectorAll('.section-content, .dashboard-content').forEach(section => {
+                section.style.display = 'none';
+            });
             
-            // Add the selected section content
-            if (contentSections[sectionName]) {
-                mainContent.appendChild(contentSections[sectionName]);
-                
-                // Initialize any action buttons in the newly added content
-                initializeActionButtons();
+            // Show the selected section
+            if (sectionName === 'Dashboard') {
+                document.querySelector('.dashboard-content').style.display = 'block';
+            } else {
+                const sectionId = sectionMap[sectionName];
+                if (sectionId) {
+                    const section = document.getElementById(sectionId);
+                    if (section) {
+                        section.style.display = 'block';
+                        // Initialize section-specific functionality
+                        if (sectionId === 'scrap-listings') {
+                            initializeScrapListings();
+                        }
+                    }
+                }
             }
+            
+            // Initialize any action buttons in the newly shown content
+            initializeActionButtons();
         });
     });
 
     // Initialize action buttons for the initial dashboard
     initializeActionButtons();
     
-    // Function to initialize action buttons
-    function initializeActionButtons() {
-        const approveBtns = document.querySelectorAll('.approve-btn');
-        const rejectBtns = document.querySelectorAll('.reject-btn');
-        
-        approveBtns.forEach(btn => {
+    // Function to initialize scrap listings functionality
+    function initializeScrapListings() {
+        // Set up filter buttons
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
             btn.addEventListener('click', function() {
-                const row = this.closest('tr');
-                const statusCell = row.querySelector('.status');
-                statusCell.textContent = 'Approved';
-                statusCell.className = 'status approved';
-                
-                // Add to activity feed
-                const id = row.querySelector('td:first-child').textContent;
-                const title = row.querySelector('td:nth-child(2)').textContent;
-                addActivity(`<strong>Listing Approved:</strong> ${id} - ${title}`, 'check-circle', 'secondary-color');
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const filter = this.getAttribute('data-filter');
+                fetchListings(filter);
             });
         });
-        
-        rejectBtns.forEach(btn => {
+
+        // Set up search input
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', debounce(function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#listingsTableBody tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            }, 300));
+        }
+
+        // Set up category filter
+        const categoryFilter = document.querySelector('.category-filter');
+        if (categoryFilter) {
+            categoryFilter.addEventListener('change', function() {
+                const category = this.value;
+                const rows = document.querySelectorAll('#listingsTableBody tr');
+                rows.forEach(row => {
+                    const rowCategory = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                    row.style.display = (!category || rowCategory.includes(category)) ? '' : 'none';
+                });
+            });
+        }
+
+        // Initial fetch of listings
+        fetchListings('pending');
+    }
+
+    // Function to fetch listings with dummy data
+    function fetchListings(filter) {
+        const listingsTableBody = document.getElementById('listingsTableBody');
+        if (listingsTableBody) {
+            listingsTableBody.innerHTML = `
+                <tr>
+                    <td>Listing #0001</td>
+                    <td>Dummy Seller</td>
+                    <td>Metal</td>
+                    <td>0000 kg</td>
+                    <td><span class="status ${filter}">${filter}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
+                            <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
+                            <button class="action-btn reject-btn"><i class="fas fa-ban"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // Function to initialize action buttons
+    function initializeActionButtons() {
+        // View buttons
+        document.querySelectorAll('.view-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const row = this.closest('tr');
-                const statusCell = row.querySelector('.status');
-                statusCell.textContent = 'Rejected';
-                statusCell.className = 'status rejected';
-                
-                // Add to activity feed
-                const id = row.querySelector('td:first-child').textContent;
-                const title = row.querySelector('td:nth-child(2)').textContent;
-                addActivity(`<strong>Listing Rejected:</strong> ${id} - ${title}`, 'times-circle', 'error-color');
+                const listingId = row.querySelector('td:first-child').textContent;
+                showListingDetails(listingId);
+            });
+        });
+
+        // Approve buttons
+        document.querySelectorAll('.approve-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const listingId = row.querySelector('td:first-child').textContent;
+                updateListingStatus(listingId, 'approved');
+            });
+        });
+
+        // Reject buttons
+        document.querySelectorAll('.reject-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const listingId = row.querySelector('td:first-child').textContent;
+                updateListingStatus(listingId, 'rejected');
             });
         });
     }
-    
-    // Function to add activity to the feed
-    function addActivity(message, icon, colorClass) {
-        const activityFeeds = document.querySelectorAll('.activity-feed');
-        if (activityFeeds.length === 0) return;
-        
-        const activityFeed = activityFeeds[0];
-        const colorMap = {
-            'primary-color': 'rgba(57, 9, 188, 0.2)',
-            'secondary-color': 'rgba(39, 174, 96, 0.2)',
-            'error-color': 'rgba(231, 76, 60, 0.2)',
-            'warning-color': 'rgba(241, 196, 15, 0.2)'
-        };
-        
-        const actualColor = {
-            'primary-color': 'var(--primary-color)',
-            'secondary-color': 'var(--secondary-color)',
-            'error-color': 'var(--error-color)',
-            'warning-color': 'var(--warning-color)'
-        };
-        
-        const activityItem = document.createElement('div');
-        activityItem.className = 'activity-item';
-        activityItem.innerHTML = `
-            <div class="activity-icon" style="background-color: ${colorMap[colorClass]}; color: ${actualColor[colorClass]}">
-                <i class="fas fa-${icon}"></i>
-            </div>
-            <div class="activity-details">
-                <p class="activity-message">${message}</p>
-                <p class="activity-time">Just now</p>
+
+    // Function to show listing details
+    function showListingDetails(listingId) {
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="listing-details-modal">
+                <div class="modal-header">
+                    <h3>Listing Details - ${listingId}</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="listing-image">
+                        <img src="/api/placeholder/400/300" alt="Listing Image">
+                    </div>
+                    <div class="listing-info">
+                        <h4>Listing Information</h4>
+                        <p><strong>Title:</strong> Dummy Listing</p>
+                        <p><strong>Category:</strong> Metal</p>
+                        <p><strong>Quantity:</strong> 0000 kg</p>
+                        <p><strong>Price:</strong> $000/ton</p>
+                        <p><strong>Description:</strong> Dummy description for testing purposes.</p>
+                        <p><strong>Status:</strong> <span class="status pending">Pending</span></p>
+                    </div>
+                </div>
             </div>
         `;
-        
-        activityFeed.prepend(activityItem);
-        
-        // Remove oldest activity if more than 5
-        if (activityFeed.children.length > 5) {
-            activityFeed.removeChild(activityFeed.lastChild);
-        }
-        
-        // Update notification count
-        const badges = document.querySelectorAll('.notifications .badge');
-        badges.forEach(badge => {
-            badge.textContent = parseInt(badge.textContent) + 1;
+
+        // Add modal to body
+        document.body.appendChild(modal);
+
+        // Add close button functionality
+        const closeBtn = modal.querySelector('.close-modal');
+        closeBtn.addEventListener('click', () => {
+            modal.remove();
         });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // Function to update listing status
+    function updateListingStatus(listingId, status) {
+        // In a real application, this would make an API call
+        console.log(`Updating listing ${listingId} to ${status}`);
+        
+        // Update UI
+        const row = document.querySelector(`tr td:first-child:contains('${listingId}')`).closest('tr');
+        if (row) {
+            const statusCell = row.querySelector('.status');
+            statusCell.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            statusCell.className = 'status ' + status;
+            
+            // Add activity to feed
+            addActivity(`Listing ${listingId} ${status}`, 
+                status === 'approved' ? 'check-circle' : 'times-circle',
+                status === 'approved' ? 'secondary-color' : 'error-color'
+            );
+        }
+    }
+
+    // Utility function for debouncing
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Function to add activity to the feed
+    function addActivity(message, icon, colorClass) {
+        const activityFeed = document.querySelector('.activity-feed');
+        if (activityFeed) {
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+            activityItem.innerHTML = `
+                <div class="activity-icon" style="background-color: rgba(57, 9, 188, 0.2); color: var(--primary-color);">
+                    <i class="fas fa-${icon}"></i>
+                </div>
+                <div class="activity-details">
+                    <p class="activity-message">${message}</p>
+                    <p class="activity-time">Just now</p>
+                </div>
+            `;
+            activityFeed.prepend(activityItem);
+        }
+    }
+
+    // Initialize the dashboard by default
+    const dashboardSection = document.querySelector('.dashboard-content');
+    if (dashboardSection) {
+        dashboardSection.style.display = 'block';
     }
 });
 
@@ -372,119 +483,38 @@ function createScrapListingsContent() {
     container.innerHTML = `
         <h2 class="section-title">Scrap Listings</h2>
         <div class="filters" style="margin-bottom: 20px;">
-            <button class="filter-btn active" data-filter="pending">Pending (18)</button>
-            <button class="filter-btn" data-filter="active">Active (42)</button>
-            <button class="filter-btn" data-filter="flagged">Flagged (3)</button>
+            <button class="filter-btn active" data-filter="pending">Pending</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="flagged">Flagged</button>
         </div>
         <div class="table-card">
             <div class="table-header">
-                <h3 class="table-title">Pending Scrap Listings</h3>
+                <h3 class="table-title">Scrap Listings</h3>
                 <div>
-                    <input type="text" placeholder="Search listings..." style="padding: 8px; border-radius: 4px; border: 1px solid #ddd; margin-right: 10px;">
-                    <select style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
-                        <option>All Categories</option>
-                        <option>Metal</option>
-                        <option>Electronics</option>
-                        <option>Plastic</option>
-                        <option>Paper</option>
-                        <option>Other</option>
+                    <input type="text" placeholder="Search listings..." class="search-input" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd; margin-right: 10px;">
+                    <select class="category-filter" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <option value="">All Categories</option>
+                        <option value="metal">Metal</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="plastic">Plastic</option>
+                        <option value="paper">Paper</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
             </div>
             <table>
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Title</th>
                         <th>Seller</th>
                         <th>Category</th>
-                        <th>Price</th>
-                        <th>Date</th>
+                        <th>Quantity</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>#SL1028</td>
-                        <td>Metal Scraps (Aluminum)</td>
-                        <td>MetalWorks Inc</td>
-                        <td>Metal</td>
-                        <td>$250/ton</td>
-                        <td>28 Mar 2025</td>
-                        <td><span class="status pending">Pending</span></td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
-                                <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
-                                <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#SL1027</td>
-                        <td>Electronic Waste Lot</td>
-                        <td>TechRecycle</td>
-                        <td>Electronics</td>
-                        <td>$320/lot</td>
-                        <td>27 Mar 2025</td>
-                        <td><span class="status pending">Pending</span></td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
-                                <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
-                                <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#SL1026</td>
-                        <td>Used Copper Wiring</td>
-                        <td>PowerSupply Co</td>
-                        <td>Metal</td>
-                        <td>$425/ton</td>
-                        <td>26 Mar 2025</td>
-                        <td><span class="status pending">Pending</span></td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
-                                <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
-                                <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#SL1025</td>
-                        <td>Plastic Scrap Bundle</td>
-                        <td>GreenRecycle</td>
-                        <td>Plastic</td>
-                        <td>$180/ton</td>
-                        <td>25 Mar 2025</td>
-                        <td><span class="status pending">Pending</span></td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
-                                <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
-                                <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#SL1024</td>
-                        <td>Computer Parts Bulk</td>
-                        <td>TechRecycle</td>
-                        <td>Electronics</td>
-                        <td>$450/lot</td>
-                        <td>24 Mar 2025</td>
-                        <td><span class="status pending">Pending</span></td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
-                                <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
-                                <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
-                            </div>
-                        </td>
-                    </tr>
+                <tbody id="listingsTableBody">
+                    <!-- Listings will be dynamically added here -->
                 </tbody>
             </table>
             <div style="display: flex; justify-content: center; margin-top: 20px;">
@@ -498,7 +528,7 @@ function createScrapListingsContent() {
             </div>
         </div>
     `;
-    
+
     // Add filter button functionality
     setTimeout(() => {
         const filterBtns = container.querySelectorAll('.filter-btn');
@@ -519,8 +549,25 @@ function createScrapListingsContent() {
                         tableTitle.textContent = 'Flagged Scrap Listings';
                     }
                 }
+                // Fetch listings with new filter
+                fetchListings(filter);
             });
         });
+
+        // Add search functionality
+        const searchInput = container.querySelector('.search-input');
+        searchInput.addEventListener('input', debounce(() => {
+            fetchListings();
+        }, 500));
+
+        // Add category filter functionality
+        const categoryFilter = container.querySelector('.category-filter');
+        categoryFilter.addEventListener('change', () => {
+            fetchListings();
+        });
+
+        // Initial fetch of listings
+        fetchListings();
     }, 100);
     
     return container;
@@ -1367,6 +1414,7 @@ function createDashboardContent() {
                 <div style="height: 250px; display: flex; align-items: center; justify-content: center;">
                     <div style="color: #777; font-style: italic;">Categories chart will display here</div>
                 </div>
+            </div>
             <div class="chart-card">
                 <h3>Revenue Distribution</h3>
                 <div style="height: 250px; display: flex; align-items: center; justify-content: center;">

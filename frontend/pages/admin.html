@@ -68,197 +68,458 @@
                 </div>
                 <img src="/api/placeholder/80/80" alt="Admin">
                 <div>
-                    <p>John Smith</p>
-                    <small>Administrator</small>
+                    <p>Admin Panel</p>
+                    <small>Scrapify</small>
                 </div>
             </div>
         </div>
 
-        <!-- Dashboard Overview -->
-        <div class="dashboard-cards">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Users</h3>
-                    <div class="card-icon users-icon">
-                        <i class="fas fa-users"></i>
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <!-- Dashboard Overview -->
+            <div class="dashboard-cards">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Users</h3>
+                        <div class="card-icon users-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
                     </div>
+                    <div class="card-value">0000</div>
+                    <div class="card-label">Total Sellers & Buyers</div>
                 </div>
-                <div class="card-value">2,450</div>
-                <div class="card-label">Total Sellers & Buyers</div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Pending Listings</h3>
+                        <div class="card-icon listings-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">0000</div>
+                    <div class="card-label">Awaiting Approval</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Revenue</h3>
+                        <div class="card-icon revenue-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">$0000</div>
+                    <div class="card-label">Total Transactions</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Disputes</h3>
+                        <div class="card-icon disputes-icon">
+                            <i class="fas fa-gavel"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">0000</div>
+                    <div class="card-label">Ongoing Issues</div>
+                </div>
             </div>
-            <div class="card">
-                <div class="card-header">
-                    <h3>Pending Listings</h3>
-                    <div class="card-icon listings-icon">
-                        <i class="fas fa-clipboard-list"></i>
+
+            <!-- Tables -->
+            <div class="tables-container">
+                <!-- Pending Listings Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 class="table-title">Pending Scrap Listings</h3>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Seller</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listingsTableBody">
+                            <!-- Listings will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 class="table-title">Recent Activities</h3>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <div class="activity-feed">
+                        <div class="activity-item">
+                            <div class="activity-icon" style="background-color: rgba(57, 9, 188, 0.2); color: var(--primary-color);">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="activity-details">
+                                <p class="activity-message"><strong>New Seller:</strong> Dummy Seller registered</p>
+                                <p class="activity-time">Just now</p>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon" style="background-color: rgba(39, 174, 96, 0.2); color: var(--secondary-color);">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="activity-details">
+                                <p class="activity-message"><strong>Listing Approved:</strong> #0000 - Dummy Listing</p>
+                                <p class="activity-time">Just now</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="card-value">18</div>
-                <div class="card-label">Awaiting Approval</div>
-            </div>
-            <div class="card">
-                <div class="card-header">
-                    <h3>Revenue</h3>
-                    <div class="card-icon revenue-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                </div>
-                <div class="card-value">$24,586</div>
-                <div class="card-label">Total Transactions</div>
-            </div>
-            <div class="card">
-                <div class="card-header">
-                    <h3>Disputes</h3>
-                    <div class="card-icon disputes-icon">
-                        <i class="fas fa-gavel"></i>
-                    </div>
-                </div>
-                <div class="card-value">7</div>
-                <div class="card-label">Ongoing Issues</div>
             </div>
         </div>
 
-        <!-- Tables -->
-        <div class="tables-container">
-            <!-- Pending Listings Table -->
+        <!-- Section Content -->
+        <div class="section-content" id="manage-sellers" style="display: none;">
+            <h2 class="section-title">Manage Sellers</h2>
             <div class="table-card">
                 <div class="table-header">
-                    <h3 class="table-title">Pending Scrap Listings</h3>
-                    <a href="#" class="view-all">View All</a>
+                    <h3 class="table-title">Registered Sellers</h3>
+                    <div>
+                        <button class="view-all"><i class="fas fa-plus"></i> Add New Seller</button>
+                    </div>
                 </div>
                 <table>
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Title</th>
-                            <th>Seller</th>
-                            <th>Category</th>
-                            <th>Price</th>
+                            <th>Company</th>
+                            <th>Contact Person</th>
+                            <th>Email</th>
+                            <th>Registration Date</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>#SL1028</td>
-                            <td>Metal Scraps (Aluminum)</td>
-                            <td>MetalWorks Inc</td>
-                            <td>Metal</td>
-                            <td>$250/ton</td>
-                            <td><span class="status pending">Pending</span></td>
+                            <td>#0000</td>
+                            <td>Dummy Company</td>
+                            <td>Dummy Contact</td>
+                            <td>dummy@example.com</td>
+                            <td>DD/MM/YYYY</td>
+                            <td><span class="status approved">Active</span></td>
                             <td>
                                 <div class="action-buttons">
                                     <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
                                     <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
-                                    <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#SL1027</td>
-                            <td>Electronic Waste Lot</td>
-                            <td>TechRecycle</td>
-                            <td>Electronics</td>
-                            <td>$320/lot</td>
-                            <td><span class="status pending">Pending</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
-                                    <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
-                                    <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#SL1026</td>
-                            <td>Used Copper Wiring</td>
-                            <td>PowerSupply Co</td>
-                            <td>Metal</td>
-                            <td>$425/ton</td>
-                            <td><span class="status pending">Pending</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
-                                    <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
-                                    <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#SL1025</td>
-                            <td>Plastic Scrap Bundle</td>
-                            <td>GreenRecycle</td>
-                            <td>Plastic</td>
-                            <td>$180/ton</td>
-                            <td><span class="status pending">Pending</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
-                                    <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
-                                    <button class="action-btn reject-btn"><i class="fas fa-times"></i></button>
+                                    <button class="action-btn reject-btn"><i class="fas fa-ban"></i></button>
                                 </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <!-- Recent Activity -->
+        <div class="section-content" id="manage-buyers" style="display: none;">
+            <h2 class="section-title">Manage Buyers</h2>
             <div class="table-card">
                 <div class="table-header">
-                    <h3 class="table-title">Recent Activities</h3>
-                    <a href="#" class="view-all">View All</a>
-                </div>
-                <div class="activity-feed">
-                    <div class="activity-item">
-                        <div class="activity-icon" style="background-color: rgba(57, 9, 188, 0.2); color: var(--primary-color);">
-                            <i class="fas fa-user-plus"></i>
-                        </div>
-                        <div class="activity-details">
-                            <p class="activity-message"><strong>New Seller:</strong> Industrial Metals Ltd. registered</p>
-                            <p class="activity-time">10 minutes ago</p>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon" style="background-color: rgba(39, 174, 96, 0.2); color: var(--secondary-color);">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="activity-details">
-                            <p class="activity-message"><strong>Listing Approved:</strong> #SL1023 - Steel Scrap Lot</p>
-                            <p class="activity-time">35 minutes ago</p>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon" style="background-color: rgba(231, 76, 60, 0.2); color: var(--error-color);">
-                            <i class="fas fa-exclamation-circle"></i>
-                        </div>
-                        <div class="activity-details">
-                            <p class="activity-message"><strong>New Dispute:</strong> Order #ORD528 - Delivery issue</p>
-                            <p class="activity-time">1 hour ago</p>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon" style="background-color: rgba(241, 196, 15, 0.2); color: var(--warning-color);">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
-                        <div class="activity-details">
-                            <p class="activity-message"><strong>Transaction:</strong> #TRX10354 - $1,250 completed</p>
-                            <p class="activity-time">2 hours ago</p>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon" style="background-color: rgba(57, 9, 188, 0.2); color: var(--primary-color);">
-                            <i class="fas fa-user-edit"></i>
-                        </div>
-                        <div class="activity-details">
-                            <p class="activity-message"><strong>Profile Updated:</strong> MetalWorks Inc. changed contact info</p>
-                            <p class="activity-time">3 hours ago</p>
-                        </div>
+                    <h3 class="table-title">Registered Buyers</h3>
+                    <div>
+                        <button class="view-all"><i class="fas fa-plus"></i> Add New Buyer</button>
                     </div>
                 </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Company</th>
+                            <th>Contact Person</th>
+                            <th>Email</th>
+                            <th>Registration Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#0000</td>
+                            <td>Dummy Company</td>
+                            <td>Dummy Contact</td>
+                            <td>dummy@example.com</td>
+                            <td>DD/MM/YYYY</td>
+                            <td><span class="status approved">Active</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn approve-btn"><i class="fas fa-check"></i></button>
+                                    <button class="action-btn reject-btn"><i class="fas fa-ban"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
+
+        <div class="section-content" id="scrap-listings" style="display: none;">
+            <h2 class="section-title">Scrap Listings</h2>
+            <div class="filters" style="margin-bottom: 20px;">
+                <button class="filter-btn active" data-filter="pending">Pending</button>
+                <button class="filter-btn" data-filter="active">Active</button>
+                <button class="filter-btn" data-filter="flagged">Flagged</button>
+            </div>
+            <div class="table-card">
+                <div class="table-header">
+                    <h3 class="table-title">Scrap Listings</h3>
+                    <div>
+                        <input type="text" placeholder="Search listings..." class="search-input" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd; margin-right: 10px;">
+                        <select class="category-filter" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="">All Categories</option>
+                            <option value="metal">Metal</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="plastic">Plastic</option>
+                            <option value="paper">Paper</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Seller</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listingsTableBody">
+                        <!-- Listings will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-content" id="transactions" style="display: none;">
+            <h2 class="section-title">Transactions & Payments</h2>
+            <div class="dashboard-cards">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Total Revenue</h3>
+                        <div class="card-icon revenue-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">$24,586</div>
+                    <div class="card-label">For March 2025</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Transactions</h3>
+                        <div class="card-icon users-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">152</div>
+                    <div class="card-label">This Month</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Pending Payouts</h3>
+                        <div class="card-icon listings-icon">
+                            <i class="fas fa-hand-holding-usd"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">$8,350</div>
+                    <div class="card-label">To Seller Accounts</div>
+                </div>
+            </div>
+            <div class="table-card">
+                <div class="table-header">
+                    <h3 class="table-title">Recent Transactions</h3>
+                    <div>
+                        <input type="text" placeholder="Search transactions..." style="padding: 8px; border-radius: 4px; border: 1px solid #ddd; margin-right: 10px;">
+                        <select style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option>All Time</option>
+                            <option>Today</option>
+                            <option>This Week</option>
+                            <option>This Month</option>
+                            <option>Last Month</option>
+                        </select>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Buyer</th>
+                            <th>Seller</th>
+                            <th>Item</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Transaction rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-content" id="disputes" style="display: none;">
+            <h2 class="section-title">Dispute Management</h2>
+            <div class="dashboard-cards">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Open Disputes</h3>
+                        <div class="card-icon disputes-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">7</div>
+                    <div class="card-label">Requiring Attention</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Average Resolution Time</h3>
+                        <div class="card-icon time-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">2.3 days</div>
+                    <div class="card-label">This Month</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Resolved Cases</h3>
+                        <div class="card-icon resolved-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">24</div>
+                    <div class="card-label">Last 30 Days</div>
+                </div>
+            </div>
+            <div class="table-card">
+                <div class="table-header">
+                    <h3 class="table-title">Active Disputes</h3>
+                    <div>
+                        <select style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option>All Disputes</option>
+                            <option>High Priority</option>
+                            <option>Medium Priority</option>
+                            <option>Low Priority</option>
+                        </select>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date Filed</th>
+                            <th>Buyer</th>
+                            <th>Seller</th>
+                            <th>Transaction</th>
+                            <th>Issue Type</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dispute rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-content" id="reports" style="display: none;">
+            <h2 class="section-title">Reports & Analytics</h2>
+            <div class="dashboard-cards">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Total Revenue YTD</h3>
+                        <div class="card-icon revenue-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">$76,240</div>
+                    <div class="card-label">12% increase from last year</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Total Transactions YTD</h3>
+                        <div class="card-icon transactions-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">485</div>
+                    <div class="card-label">8% increase from last year</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>New Users YTD</h3>
+                        <div class="card-icon users-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">125</div>
+                    <div class="card-label">24% increase from last year</div>
+                </div>
+            </div>
+            <!-- Charts and additional reports will be added here -->
+        </div>
+
+        <div class="section-content" id="settings" style="display: none;">
+            <h2 class="section-title">Admin Settings</h2>
+            <div class="tabs" style="margin-bottom: 20px;">
+                <button class="tab-btn active" data-tab="general">General Settings</button>
+                <button class="tab-btn" data-tab="admin">Admin Accounts</button>
+                <button class="tab-btn" data-tab="fees">Platform Fees</button>
+                <button class="tab-btn" data-tab="notifications">Notifications</button>
+            </div>
+            <div class="tab-content active" id="general-tab">
+                <div class="settings-card">
+                    <h3>General Platform Settings</h3>
+                    <form>
+                        <div class="form-group">
+                            <label>Platform Name</label>
+                            <input type="text" value="ScrapMarket" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Support Email</label>
+                            <input type="email" value="support@scrapmarket.com" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Phone</label>
+                            <input type="text" value="+1 (555) 123-4567" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Listing Approval</label>
+                            <select class="form-control">
+                                <option selected>Manual Approval Required</option>
+                                <option>Auto-Approve Verified Sellers</option>
+                                <option>Auto-Approve All</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Maintenance Mode</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="maintenance-mode">
+                                <label for="maintenance-mode"></label>
+                            </div>
+                        </div>
+                        <button type="button" class="btn save-btn">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+            <!-- Other settings tabs will be added here -->
+        </div>
     </div>
-<script src="../js/admin.js"></script>
+
+    <script src="../js/admin.js"></script>
 </body>
 </html>

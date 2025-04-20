@@ -6,15 +6,17 @@ const router = express.Router();
 router.post('/listings', async (req, res) => {
     try {
         console.log("start");
-        const { category, title, description, quantity, location, photo } = req.body;
+        const { category, description, quantity, addressLine, city, pincode, photo } = req.body;
         console.log('Received Data:', req.body);  // Debug log
         const newListing = new Listing({
             category,
-            title,
             description,
             quantity,
-            location,
+            addressLine,
+            city,
+            pincode,
             photo,
+            status: 'in_review', // Set initial status
             user: req.user.id  // Add the user ID to the listing
         });
         await newListing.save();
@@ -84,7 +86,7 @@ router.delete('/listings/:id', async (req, res) => {
 // Update a listing
 router.put('/listings/:id', async (req, res) => {
     try {
-        const { category, title, description, quantity, location, photo } = req.body;
+        const { category, description, quantity, addressLine, city, pincode, photo, status } = req.body;
         const listing = await Listing.findOne({ 
             _id: req.params.id,
             user: req.user.id  // Only allow updates to user's own listings
@@ -96,11 +98,13 @@ router.put('/listings/:id', async (req, res) => {
         
         // Update listing fields
         listing.category = category;
-        listing.title = title;
         listing.description = description;
         listing.quantity = quantity;
-        listing.location = location;
+        listing.addressLine = addressLine;
+        listing.city = city;
+        listing.pincode = pincode;
         listing.photo = photo;
+        if (status) listing.status = status; // Only update status if provided
         
         await listing.save();
         res.json(listing);
