@@ -184,6 +184,15 @@ function setupFormHandlers() {
             try {
                 const formData = new FormData(sellForm);
                 const photoFile = formData.get('photo');
+                const category = formData.get('category');
+                const quantity = parseFloat(formData.get('quantity'));
+                
+                // Calculate price based on category and quantity
+                const price = calculatePrice(category, quantity);
+                
+                if (!price || isNaN(price)) {
+                    throw new Error('Invalid price calculation. Please check category and quantity.');
+                }
                 
                 // Convert photo to base64
                 const photoBase64 = await new Promise((resolve) => {
@@ -193,18 +202,22 @@ function setupFormHandlers() {
                 });
                 
                 const data = {
-                    category: formData.get('category'),
+                    title: `${category} Scrap`,
+                    category: category, // This will be 'ewaste' instead of 'electronics'
                     description: formData.get('description'),
-                    quantity: parseFloat(formData.get('quantity')),
+                    quantity: quantity,
                     addressLine: formData.get('addressLine'),
                     city: formData.get('city'),
                     pincode: formData.get('pincode'),
                     photo: photoBase64,
-                    status: 'in_review', // Set initial status
-                    price: calculatePrice(formData.get('category'), parseFloat(formData.get('quantity')))
+                    status: 'in_review',
+                    price: price // Ensure price is included
                 };
                 
-                console.log('Form data:', data);
+                console.log('Form data:', {
+                    ...data,
+                    photo: data.photo ? 'photo data exists' : 'no photo'
+                });
                 
                 // Get the authentication token from localStorage
                 const token = localStorage.getItem('token');
@@ -230,13 +243,18 @@ function setupFormHandlers() {
                 const responseData = await response.json();
                 
                 if (response.ok) {
+                    console.log('Listing created successfully:', responseData);
                     alert('Listing created successfully!');
                     sellForm.reset();
                     photoPreview.style.display = 'none';
-                    // Fetch updated listings
-                    fetchListings();
+                    
+                    // Wait a brief moment before fetching listings
+                    setTimeout(() => {
+                        console.log('Refreshing listings after creation...');
+                        fetchListings();
+                    }, 500);
                 } else {
-                    throw new Error(responseData.msg || 'Error creating listing. Please try again.');
+                    throw new Error(responseData.message || responseData.msg || 'Error creating listing. Please try again.');
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -256,17 +274,21 @@ function calculatePrice(category, quantity) {
         'paper': 12,
         'plastic': 15,
         'metal': 35,
-        'electronics': 45,
-        'glass': 8,
-        'other': 10
+        'ewaste': 45,
+        'glass': 8
     };
     
-    return rates[category] * quantity;
+    const rate = rates[category];
+    if (!rate || !quantity || quantity <= 0) {
+        return null;
+    }
+    
+    return rate * quantity;
 }
 
 // Fetch and display listings
 async function fetchListings() {
-    console.log("Fetching listings...");
+    console.log("Fetching seller's listings...");
     try {
         // Get the authentication token from localStorage
         const token = localStorage.getItem('token');
@@ -276,14 +298,24 @@ async function fetchListings() {
             return;
         }
 
-        const response = await fetch('http://localhost:5000/api/listings/my', {
+        // Add timestamp to prevent caching
+        const response = await fetch(`http://localhost:5000/api/listings/my?t=${Date.now()}`, {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
             }
         });
         
+        console.log('Response status:', response.status);
+        
         if (response.ok) {
             const listings = await response.json();
+            console.log('Fetched listings:', listings);
+            console.log('Number of listings:', listings.length);
+            console.log('Listing IDs:', listings.map(l => l._id));
+            
             const listingsContainer = document.querySelector('.listings-grid');
             const statusFilter = document.getElementById('listingStatus');
             
@@ -323,12 +355,11 @@ async function fetchListings() {
                         'paper': 12,
                         'plastic': 15,
                         'metal': 35,
-                        'electronics': 45,
-                        'glass': 8,
-                        'other': 10
+                        'ewaste': 45,
+                        'glass': 8
                     };
                     const pricePerKg = rates[listing.category] || 10;
-                    const totalPrice = pricePerKg * listing.quantity;
+                    const totalPrice = listing.price || (pricePerKg * listing.quantity);
                     
                     // Determine status class and text
                     let statusClass = 'status-review';
@@ -346,18 +377,21 @@ async function fetchListings() {
                     
                     listingElement.innerHTML = `
                         <div class="listing-image">
-                            <img src="${listing.photo}" alt="${listing.category}">
+                            <img src="${listing.photo || 'https://via.placeholder.com/300x200'}" alt="${listing.title || listing.category}">
+                            <div class="listing-category">${listing.category.toUpperCase()}</div>
+                            <div class="listing-status ${statusClass}">${statusText}</div>
                         </div>
-                        <h3 class="category-heading">${listing.category.toUpperCase()}</h3>
-                        <p class="listing-description">${listing.description}</p>
-                        <div class="listing-info">
-                            <div class="quantity-price">
-                                <span class="quantity">${listing.quantity} kg</span>
-                                <span class="price">₹${totalPrice}</span>
-                            </div>
-                            <div class="status-location">
-                                <span class="status ${statusClass}">${statusText}</span>
-                                <span class="location">${listing.city}</span>
+                        <div class="listing-details">
+                            <h3>${listing.title || `${listing.category.toUpperCase()} Scrap`}</h3>
+                            <p class="listing-description">${listing.description}</p>
+                            <div class="listing-info">
+                                <div class="quantity-price">
+                                    <span class="quantity">${listing.quantity} kg</span>
+                                    <span class="price">₹${totalPrice}</span>
+                                </div>
+                                <div class="status-location">
+                                    <span class="location">${listing.city}</span>
+                                </div>
                             </div>
                         </div>
                         <div class="listing-actions">
@@ -374,9 +408,19 @@ async function fetchListings() {
         } else {
             const errorData = await response.json();
             console.error('Error fetching listings:', errorData);
+            throw new Error(errorData.message || 'Failed to fetch listings');
         }
     } catch (error) {
-        console.error('Error fetching listings:', error);
+        console.error('Error:', error);
+        const listingsContainer = document.querySelector('.listings-grid');
+        if (listingsContainer) {
+            listingsContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>${error.message || 'Failed to load listings. Please try again.'}</p>
+                </div>
+            `;
+        }
     }
 }
 
@@ -398,9 +442,8 @@ function showEditModal(listing) {
                             <option value="paper" ${listing.category === 'paper' ? 'selected' : ''}>Paper Waste</option>
                             <option value="plastic" ${listing.category === 'plastic' ? 'selected' : ''}>Plastic</option>
                             <option value="metal" ${listing.category === 'metal' ? 'selected' : ''}>Metal Scrap</option>
-                            <option value="electronics" ${listing.category === 'electronics' ? 'selected' : ''}>Electronic Waste</option>
+                            <option value="ewaste" ${listing.category === 'ewaste' ? 'selected' : ''}>E-Waste</option>
                             <option value="glass" ${listing.category === 'glass' ? 'selected' : ''}>Glass</option>
-                            <option value="other" ${listing.category === 'other' ? 'selected' : ''}>Other</option>
                         </select>
                     </div>
                     <div class="form-group">

@@ -5,14 +5,40 @@ const router = express.Router();
 // Create a new listing
 router.post('/', async (req, res) => {
     try {
-        const listing = new Listing({
+        console.log('Creating new listing...');
+        console.log('User ID:', req.user.id);
+        console.log('Request body:', {
             ...req.body,
+            photo: req.body.photo ? 'photo data exists' : 'no photo'
+        });
+
+        const listing = new Listing({
+            title: req.body.title || `${req.body.category} Scrap`,
+            description: req.body.description,
+            category: req.body.category,
+            quantity: req.body.quantity,
+            price: req.body.price,
+            city: req.body.city.toUpperCase(),
+            photo: req.body.photo,
             user: req.user.id,
             status: 'in_review'
         });
-        await listing.save();
-        res.status(201).json(listing);
+
+        console.log('New listing object:', {
+            ...listing.toObject(),
+            photo: listing.photo ? 'photo data exists' : 'no photo'
+        });
+        
+        const savedListing = await listing.save();
+        console.log('Listing saved successfully with ID:', savedListing._id);
+        
+        // Verify the listing was saved by fetching it back
+        const verifyListing = await Listing.findById(savedListing._id);
+        console.log('Verified listing exists:', !!verifyListing);
+        
+        res.status(201).json(savedListing);
     } catch (err) {
+        console.error('Error creating listing:', err);
         res.status(400).json({ message: err.message });
     }
 });
@@ -78,9 +104,26 @@ router.get('/', async (req, res) => {
 // Get user's own listings
 router.get('/my', async (req, res) => {
     try {
-        const listings = await Listing.find({ user: req.user.id });
+        console.log('Fetching user listings...');
+        console.log('User ID:', req.user.id);
+
+        // Set cache control headers to prevent caching
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        res.set('Expires', '-1');
+        res.set('Pragma', 'no-cache');
+
+        // Use lean() for better performance and toObject() to ensure we get plain objects
+        const listings = await Listing.find({ user: req.user.id })
+            .lean()
+            .populate('user', 'firstName lastName email rating')
+            .sort({ createdAt: -1 });
+        
+        console.log(`Found ${listings.length} listings for user`);
+        console.log('Listing IDs:', listings.map(l => l._id));
+
         res.json(listings);
     } catch (err) {
+        console.error('Error fetching user listings:', err);
         res.status(500).json({ message: err.message });
     }
 });
