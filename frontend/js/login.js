@@ -21,9 +21,15 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
 
-      if (data.role === "individual") window.location.href = "seller.html";
-      else if (data.role === "collector") window.location.href = "buyer.html";
-      else if (data.role === "business") window.location.href = "business.html";
+      // Check if there's a redirectTo field (for admin)
+      if (data.redirectTo) {
+        window.location.href = data.redirectTo;
+      } else {
+        // Handle normal user roles
+        if (data.role === "individual") window.location.href = "seller.html";
+        else if (data.role === "collector") window.location.href = "buyer.html";
+        else if (data.role === "business") window.location.href = "business.html";
+      }
     } else {
       alert(data.msg || "Login failed. Please check your credentials.");
     }

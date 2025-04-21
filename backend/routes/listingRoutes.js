@@ -5,36 +5,38 @@ const router = express.Router();
 // Create a new listing
 router.post('/listings', async (req, res) => {
     try {
-        console.log("start");
-        const { category, description, quantity, addressLine, city, pincode, photo } = req.body;
-        console.log('Received Data:', req.body);  // Debug log
-        const newListing = new Listing({
-            category,
-            description,
-            quantity,
-            addressLine,
-            city,
-            pincode,
-            photo,
-            status: 'in_review', // Set initial status
-            user: req.user.id  // Add the user ID to the listing
+        const listing = new Listing({
+            ...req.body,
+            user: req.user.id,
+            status: 'in_review'
         });
-        await newListing.save();
-        res.status(201).json(newListing);
+        await listing.save();
+        res.status(201).json(listing);
     } catch (err) {
-        console.error('Error:', err);  // Debug log
-        res.status(500).json({ msg: 'Server error' });
+        res.status(400).json({ message: err.message });
     }
 });
 
-// Get all listings for the current user
-router.get('/listings', async (req, res) => {
+// Get listings by city (for buyers)
+router.get('/listings/city/:city', async (req, res) => {
+    try {
+        const listings = await Listing.find({
+            city: req.params.city.toUpperCase(),
+            status: 'approved'
+        }).populate('user', 'firstName lastName email');
+        res.json(listings);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get user's own listings
+router.get('/listings/my', async (req, res) => {
     try {
         const listings = await Listing.find({ user: req.user.id });
         res.json(listings);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: 'Server error' });
+        res.status(500).json({ message: err.message });
     }
 });
 

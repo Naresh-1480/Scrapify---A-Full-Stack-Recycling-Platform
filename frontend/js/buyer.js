@@ -61,6 +61,10 @@ function setupEventListeners() {
     }
 
     document.getElementById('applyFilters')?.addEventListener('click', applyFilters);
+
+    // Add event listeners for filters
+    document.getElementById('cityFilter').addEventListener('change', loadScrapListings);
+    document.getElementById('categoryFilter').addEventListener('change', loadScrapListings);
 }
 
 // Utility Functions
@@ -235,8 +239,67 @@ function loadActiveOrders() {
     // Fetch and display active orders
 }
 
-function loadScrapListings() {
-    // Fetch and display scrap listings
+async function loadScrapListings() {
+    try {
+        showLoader();
+        const selectedCity = document.getElementById('cityFilter').value;
+        const selectedCategory = document.getElementById('categoryFilter').value;
+        
+        // Only fetch listings if a city is selected
+        if (selectedCity) {
+            const response = await fetch(`/api/listings/city/${selectedCity}`);
+            if (!response.ok) throw new Error('Failed to fetch listings');
+            
+            const listings = await response.json();
+            // Filter by category if selected
+            const filteredListings = selectedCategory 
+                ? listings.filter(listing => listing.category === selectedCategory)
+                : listings;
+            
+            displayListings(filteredListings);
+        } else {
+            // Clear listings if no city is selected
+            document.getElementById('listingsGrid').innerHTML = '<p class="no-listings">Please select a city to view listings</p>';
+        }
+    } catch (error) {
+        console.error('Error loading listings:', error);
+        document.getElementById('listingsGrid').innerHTML = '<p class="error-message">Failed to load listings. Please try again.</p>';
+    } finally {
+        hideLoader();
+    }
+}
+
+function displayListings(listings) {
+    const listingsGrid = document.getElementById('listingsGrid');
+    if (!listings.length) {
+        listingsGrid.innerHTML = '<p class="no-listings">No listings found in this city</p>';
+        return;
+    }
+
+    listingsGrid.innerHTML = listings.map(listing => `
+        <div class="listing-card" data-id="${listing._id}">
+            <div class="listing-image">
+                <img src="${listing.photo}" alt="${listing.category}">
+            </div>
+            <div class="listing-details">
+                <h3>${listing.category.charAt(0).toUpperCase() + listing.category.slice(1)}</h3>
+                <p class="description">${listing.description}</p>
+                <p class="quantity">Quantity: ${listing.quantity} kg</p>
+                <p class="location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    ${listing.city}
+                </p>
+                <div class="listing-footer">
+                    <button class="save-btn" onclick="toggleSavedListing('${listing._id}')">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button class="contact-btn" onclick="contactSeller('${listing._id}')">
+                        Contact Seller
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
 }
 
 function loadAllOrders() {

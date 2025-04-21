@@ -72,6 +72,25 @@ app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Special case for admin login
+    if (email === 'admin@gmail.com' && password === 'admin') {
+      const token = jwt.sign(
+        { id: 'admin', role: 'admin' }, 
+        process.env.JWT_SECRET || "secret_key", 
+        { expiresIn: "1h" }
+      );
+      return res.json({ 
+        token, 
+        role: 'admin',
+        redirectTo: '../pages/admin.html',
+        user: {
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@gmail.com'
+        }
+      });
+    }
+
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ msg: "Invalid email or password" });

@@ -33,13 +33,17 @@ const ListingSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['in_review', 'active', 'sold'],
+        enum: ['in_review', 'approved', 'rejected', 'sold'],
         default: 'in_review'
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 

@@ -43,6 +43,21 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
+  // Special case for admin login
+  if (email === 'admin@gmail.com' && password === 'admin') {
+    const token = jwt.sign({ id: 'admin', role: 'admin' }, "your_jwt_secret", { expiresIn: "1h" });
+    return res.json({ 
+      token, 
+      role: 'admin',
+      redirectTo: '/admin.html',
+      user: {
+        firstName: 'Admin',
+        lastName: 'User',
+        email: 'admin@gmail.com'
+      }
+    });
+  }
+
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ msg: "Invalid credentials" });
@@ -52,7 +67,15 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign({ id: user._id, role: user.role }, "your_jwt_secret", { expiresIn: "1h" });
 
-    res.json({ token, role: user.role });
+    res.json({ 
+      token, 
+      role: user.role,
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email
+      }
+    });
   } catch (err) {
     res.status(500).json({ msg: "Server error" });
   }
@@ -93,64 +116,31 @@ router.put('/profile', auth, async (req, res) => {
     try {
         const { firstName, lastName, phone, address, currentPassword, newPassword } = req.body;
         
-        // Log the incoming request data
-        console.log('Profile update request received:', {
-            firstName,
-            lastName,
-            phone,
-            address,
-            hasPasswordUpdate: !!(currentPassword && newPassword)
-        });
-
         const user = await User.findById(req.user.id);
 
         if (!user) {
-            console.error('User not found for profile update:', req.user.id);
             return res.status(404).json({ msg: 'User not found' });
         }
-
-        // Log current user data
-        console.log('Current user data:', {
-            phone: user.phone,
-            address: user.address
-        });
 
         // Update basic info
         if (firstName) user.firstName = firstName;
         if (lastName) user.lastName = lastName;
         
-        // Explicitly update phone and address
+        // Update phone and address
         user.phone = phone || user.phone;
         user.address = address || user.address;
-
-        // Log updated user data before save
-        console.log('Updated user data before save:', {
-            phone: user.phone,
-            address: user.address
-        });
 
         // Update password if provided
         if (currentPassword && newPassword) {
             const isMatch = await bcrypt.compare(currentPassword, user.password);
             if (!isMatch) {
-                console.error('Password verification failed for user:', req.user.id);
                 return res.status(400).json({ msg: 'Current password is incorrect' });
             }
             user.password = await bcrypt.hash(newPassword, 10);
         }
 
-        // Save the user
         await user.save();
-        
-        // Fetch and return updated user data
         const updatedUser = await User.findById(req.user.id).select('-password');
-        
-        // Log final user data
-        console.log('Final user data after save:', {
-            phone: updatedUser.phone,
-            address: updatedUser.address
-        });
-        
         res.json(updatedUser);
     } catch (err) {
         console.error('Profile update error:', err);
