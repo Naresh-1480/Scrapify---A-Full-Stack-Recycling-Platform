@@ -10,12 +10,8 @@ function initializeDashboard() {
     // Show loading spinner
     showLoader();
     
-    // Update date and time
-    updateDateTime();
-    setInterval(updateDateTime, 60000); // Update every minute
-    
-    // Initialize notifications
-    initializeNotifications();
+    // Load user data
+    loadUserData();
     
     // Initialize active section from URL or default to dashboard
     const currentSection = getCurrentSectionFromURL() || 'dashboard';
@@ -74,19 +70,6 @@ function showLoader() {
 
 function hideLoader() {
     document.querySelector('.loader').classList.add('hidden');
-}
-
-function updateDateTime() {
-    const now = new Date();
-    document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
 }
 
 function debounce(func, wait) {
@@ -232,11 +215,44 @@ function loadSectionData(section) {
 
 // API Integration Functions (to be implemented based on backend API)
 function loadDashboardStats() {
-    // Fetch and update dashboard statistics
+    // Set all stats to zero
+    const stats = {
+        totalOrders: 0,
+        activeOrders: 0,
+        savedListings: 0,
+        totalSpent: 0
+    };
+
+    // Update the DOM with zero values
+    document.querySelectorAll('.stat-number').forEach(stat => {
+        const statType = stat.closest('.stat-card').querySelector('h3').textContent;
+        switch(statType) {
+            case 'Total Orders':
+                stat.textContent = stats.totalOrders;
+                break;
+            case 'Active Orders':
+                stat.textContent = stats.activeOrders;
+                break;
+            case 'Saved Listings':
+                stat.textContent = stats.savedListings;
+                break;
+            case 'Total Spent':
+                stat.textContent = `₹${stats.totalSpent}`;
+                break;
+        }
+    });
+
+    // Remove the stat-change elements
+    document.querySelectorAll('.stat-change').forEach(change => {
+        change.remove();
+    });
 }
 
 function loadActiveOrders() {
-    // Fetch and display active orders
+    const ordersList = document.querySelector('.orders-list');
+    if (ordersList) {
+        ordersList.innerHTML = '<p class="no-orders">No active orders</p>';
+    }
 }
 
 async function loadScrapListings() {
@@ -307,7 +323,10 @@ function loadAllOrders() {
 }
 
 function loadSavedListings() {
-    // Fetch and display saved listings
+    const savedListingsContainer = document.querySelector('.saved-listings');
+    if (savedListingsContainer) {
+        savedListingsContainer.innerHTML = '<p class="no-listings">No saved listings</p>';
+    }
 }
 
 function loadMessages() {
@@ -360,4 +379,30 @@ function createNotificationElement(notification) {
         updateNotificationCount();
     });
     return div;
+}
+
+// Load user data
+async function loadUserData() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch('http://localhost:5000/api/auth/profile', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+            document.getElementById('user-name').textContent = userData.firstName;
+        } else {
+            throw new Error('Failed to fetch user data');
+        }
+    } catch (error) {
+        console.error('Error loading user data:', error);
+        document.getElementById('user-name').textContent = 'User';
+    }
 }

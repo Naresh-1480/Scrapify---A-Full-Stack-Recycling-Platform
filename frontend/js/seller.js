@@ -276,7 +276,7 @@ async function fetchListings() {
             return;
         }
 
-        const response = await fetch('http://localhost:5000/api/listings', {
+        const response = await fetch('http://localhost:5000/api/listings/my', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -302,7 +302,7 @@ async function fetchListings() {
                     filteredListings = listings.filter(listing => {
                         switch(statusFilter.value) {
                             case 'active':
-                                return listing.status === 'active';
+                                return listing.status === 'approved';
                             case 'review':
                                 return listing.status === 'in_review';
                             case 'sold':
@@ -333,12 +333,15 @@ async function fetchListings() {
                     // Determine status class and text
                     let statusClass = 'status-review';
                     let statusText = 'In Review';
-                    if (listing.status === 'active') {
+                    if (listing.status === 'approved') {
                         statusClass = 'status-active';
                         statusText = 'Active';
                     } else if (listing.status === 'sold') {
                         statusClass = 'status-sold';
                         statusText = 'Sold';
+                    } else if (listing.status === 'rejected') {
+                        statusClass = 'status-rejected';
+                        statusText = 'Rejected';
                     }
                     
                     listingElement.innerHTML = `
