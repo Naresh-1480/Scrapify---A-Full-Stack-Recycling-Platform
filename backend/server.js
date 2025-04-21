@@ -115,7 +115,7 @@ app.post("/api/auth/login", async (req, res) => {
 
 // Use routes
 app.use('/api/auth', authRoutes);
-app.use('/api', auth, listingRoutes);
+app.use('/api/listings', auth, listingRoutes);
 app.use('/api', auth, messageRoutes);
 
 // Serve frontend (from new code)

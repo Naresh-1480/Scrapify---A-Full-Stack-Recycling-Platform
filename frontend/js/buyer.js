@@ -257,65 +257,126 @@ function loadActiveOrders() {
 
 async function loadScrapListings() {
     try {
+        console.log('Starting to load scrap listings...');
         showLoader();
-        const selectedCity = document.getElementById('cityFilter').value;
-        const selectedCategory = document.getElementById('categoryFilter').value;
         
-        // Only fetch listings if a city is selected
-        if (selectedCity) {
-            const response = await fetch(`/api/listings/city/${selectedCity}`);
-            if (!response.ok) throw new Error('Failed to fetch listings');
-            
-            const listings = await response.json();
-            // Filter by category if selected
-            const filteredListings = selectedCategory 
-                ? listings.filter(listing => listing.category === selectedCategory)
-                : listings;
-            
-            displayListings(filteredListings);
-        } else {
-            // Clear listings if no city is selected
-            document.getElementById('listingsGrid').innerHTML = '<p class="no-listings">Please select a city to view listings</p>';
+        const selectedCity = document.getElementById('cityFilter').value;
+        console.log('Selected city:', selectedCity);
+        
+        const token = localStorage.getItem('token');
+        console.log('Token exists:', !!token);
+        
+        if (!token) {
+            throw new Error('No authentication token found');
         }
+        
+        const url = `http://localhost:5000/api/listings${selectedCity ? `?city=${selectedCity}` : ''}`;
+        console.log('Fetching from URL:', url);
+        
+        // Fetch listings from the API
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const listings = await response.json();
+        console.log('Received listings:', listings);
+        
+        if (!Array.isArray(listings)) {
+            throw new Error('Invalid response format');
+        }
+        
+        console.log(`Found ${listings.length} listings`);
+        displayListings(listings);
     } catch (error) {
         console.error('Error loading listings:', error);
-        document.getElementById('listingsGrid').innerHTML = '<p class="error-message">Failed to load listings. Please try again.</p>';
+        document.querySelector('.listings-grid').innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>${error.message === 'No authentication token found' ? 'Please log in to view listings' : 'Failed to load listings. Please try again later.'}</p>
+            </div>
+        `;
     } finally {
         hideLoader();
     }
 }
 
 function displayListings(listings) {
-    const listingsGrid = document.getElementById('listingsGrid');
-    if (!listings.length) {
-        listingsGrid.innerHTML = '<p class="no-listings">No listings found in this city</p>';
+    const listingsGrid = document.querySelector('.listings-grid');
+    if (!listings || listings.length === 0) {
+        listingsGrid.innerHTML = `
+            <div class="no-listings">
+                <i class="fas fa-search"></i>
+                <p>No listings found</p>
+            </div>
+        `;
         return;
     }
 
     listingsGrid.innerHTML = listings.map(listing => `
         <div class="listing-card" data-id="${listing._id}">
             <div class="listing-image">
-                <img src="${listing.photo}" alt="${listing.category}">
+                <img src="${listing.photo || 'https://via.placeholder.com/300x200'}" alt="${listing.title}">
+                <div class="listing-category">${listing.category}</div>
+                <div class="listing-status ${listing.status}">${listing.status}</div>
             </div>
             <div class="listing-details">
-                <h3>${listing.category.charAt(0).toUpperCase() + listing.category.slice(1)}</h3>
-                <p class="description">${listing.description}</p>
-                <p class="quantity">Quantity: ${listing.quantity} kg</p>
-                <p class="location">
-                    <i class="fas fa-map-marker-alt"></i>
-                    ${listing.city}
-                </p>
-                <div class="listing-footer">
-                    <button class="save-btn" onclick="toggleSavedListing('${listing._id}')">
-                        <i class="fas fa-star"></i>
-                    </button>
-                    <button class="contact-btn" onclick="contactSeller('${listing._id}')">
-                        Contact Seller
-                    </button>
+                <h3>${listing.title}</h3>
+                <div class="listing-meta">
+                    <span><i class="fas fa-weight-hanging"></i> ${listing.quantity} kg</span>
+                    <span><i class="fas fa-map-marker-alt"></i> ${listing.city}</span>
                 </div>
+                <div class="listing-price">₹${listing.price}/kg</div>
+                <div class="seller-info">
+                    <span><i class="fas fa-user"></i> ${listing.user?.firstName || 'Unknown'} ${listing.user?.lastName || ''}</span>
+                    <span class="seller-rating">
+                        <i class="fas fa-star"></i> ${listing.user?.rating || 'N/A'}
+                    </span>
+                </div>
+            </div>
+            <div class="listing-actions">
+                <button class="save-btn"><i class="far fa-star"></i></button>
+                <button class="view-btn">View Details</button>
+                <button class="primary-btn">Add to Cart</button>
             </div>
         </div>
     `).join('');
+
+    // Add CSS for status colors
+    const style = document.createElement('style');
+    style.textContent = `
+        .listing-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .listing-status.approved {
+            background-color: #28a745;
+        }
+        .listing-status.pending {
+            background-color: #ffc107;
+        }
+        .listing-status.in_review {
+            background-color: #17a2b8;
+        }
+        .listing-status.rejected {
+            background-color: #dc3545;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 function loadAllOrders() {
@@ -406,3 +467,31 @@ async function loadUserData() {
         document.getElementById('user-name').textContent = 'User';
     }
 }
+
+// Add event listener for city filter
+document.getElementById('cityFilter').addEventListener('change', loadScrapListings);
+
+// Add event listener for search input
+document.querySelector('.search-input').addEventListener('input', debounce(async (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const selectedCity = document.getElementById('cityFilter').value;
+    
+    try {
+        showLoader();
+        const response = await fetch(`http://localhost:5000/api/listings${selectedCity ? `?city=${selectedCity}` : ''}`);
+        if (!response.ok) throw new Error('Failed to fetch listings');
+        
+        const listings = await response.json();
+        const filteredListings = listings.filter(listing => 
+            listing.title.toLowerCase().includes(searchTerm) ||
+            listing.category.toLowerCase().includes(searchTerm) ||
+            listing.description.toLowerCase().includes(searchTerm)
+        );
+        displayListings(filteredListings);
+    } catch (error) {
+        console.error('Error searching listings:', error);
+        document.querySelector('.listings-grid').innerHTML = '<p class="error-message">Failed to search listings. Please try again.</p>';
+    } finally {
+        hideLoader();
+    }
+}, 500));

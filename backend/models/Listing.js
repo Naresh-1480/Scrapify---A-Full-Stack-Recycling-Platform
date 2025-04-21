@@ -1,45 +1,44 @@
 const mongoose = require('mongoose');
 
-const ListingSchema = new mongoose.Schema({
-    category: {
+const listingSchema = new mongoose.Schema({
+    title: {
         type: String,
         required: true,
-        enum: ['paper', 'plastic', 'metal', 'electronics', 'glass', 'other']
+        trim: true
     },
     description: {
         type: String,
         required: true
     },
+    category: {
+        type: String,
+        required: true,
+        enum: ['metal', 'plastic', 'ewaste', 'paper', 'glass']
+    },
     quantity: {
         type: Number,
         required: true
     },
-    addressLine: {
-        type: String,
+    price: {
+        type: Number,
         required: true
     },
     city: {
         type: String,
-        required: true,
-        enum: ['MUMBAI', 'PUNE', 'NAVI MUMBAI']
-    },
-    pincode: {
-        type: String,
         required: true
     },
     photo: {
-        type: String,
-        required: true
-    },
-    status: {
-        type: String,
-        enum: ['in_review', 'approved', 'rejected', 'sold'],
-        default: 'in_review'
+        type: String
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    status: {
+        type: String,
+        enum: ['available', 'sold', 'pending', 'approved', 'in_review', 'rejected'],
+        default: 'in_review'
     },
     createdAt: {
         type: Date,
@@ -47,4 +46,4 @@ const ListingSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('Listing', ListingSchema);
+module.exports = mongoose.model('Listing', listingSchema);
