@@ -829,220 +829,6 @@ function initializeAnalyticsCharts() {
     }
 }
 
-// Setup Chat Functionality in Messages section
-function setupChatFunctionality() {
-    const chatInput = document.querySelector('.chat-input input');
-    const sendBtn = document.querySelector('.send-btn');
-    const chatMessages = document.querySelector('.chat-messages');
-    const conversationsList = document.querySelector('.conversation-list');
-    const messagesSearch = document.querySelector('.messages-search input');
-    
-    if (!chatInput || !sendBtn || !chatMessages || !conversationsList) return;
-    
-    let currentConversation = null;
-    
-    // Load conversations
-    async function loadConversations() {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error('Please login to view messages');
-            }
-
-            const response = await fetch('http://localhost:5000/api/conversations', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch conversations');
-            }
-
-            const conversations = await response.json();
-            displayConversations(conversations);
-        } catch (error) {
-            console.error('Error loading conversations:', error);
-            alert(error.message);
-        }
-    }
-
-    // Display conversations in the sidebar
-    function displayConversations(conversations) {
-        conversationsList.innerHTML = '';
-        
-        conversations.forEach(conv => {
-            const conversationElement = document.createElement('div');
-            conversationElement.classList.add('conversation');
-            conversationElement.dataset.userId = conv._id;
-            
-            const time = new Date(conv.lastMessageTime).toLocaleTimeString('en-IN', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            conversationElement.innerHTML = `
-                <img src="/api/placeholder/40/40" alt="User" class="user-avatar">
-                <div class="conversation-preview">
-                    <h4>${conv.user.name}</h4>
-                    <p>${conv.lastMessage}</p>
-                </div>
-                <div class="conversation-meta">
-                    <span class="time">${time}</span>
-                    ${conv.unreadCount > 0 ? `<span class="unread-count">${conv.unreadCount}</span>` : ''}
-                </div>
-            `;
-            
-            conversationsList.appendChild(conversationElement);
-        });
-    }
-
-    // Load messages for a specific conversation
-    async function loadMessages(userId) {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error('Please login to view messages');
-            }
-
-            const response = await fetch(`http://localhost:5000/api/messages/${userId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch messages');
-            }
-
-            const messages = await response.json();
-            displayMessages(messages);
-            currentConversation = userId;
-        } catch (error) {
-            console.error('Error loading messages:', error);
-            alert(error.message);
-        }
-    }
-
-    // Display messages in the chat window
-    function displayMessages(messages) {
-        chatMessages.innerHTML = '';
-        
-        messages.forEach(message => {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
-            messageElement.classList.add(message.sender === currentConversation ? 'received' : 'sent');
-            
-            const time = new Date(message.createdAt).toLocaleTimeString('en-IN', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            messageElement.innerHTML = `
-                <p>${message.content}</p>
-                <span class="message-time">${time}</span>
-            `;
-            
-            chatMessages.appendChild(messageElement);
-        });
-        
-        // Scroll to bottom
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    // Send a new message
-    async function sendMessage() {
-        const message = chatInput.value.trim();
-        if (!message || !currentConversation) return;
-        
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error('Please login to send messages');
-            }
-
-            const response = await fetch('http://localhost:5000/api/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    receiver: currentConversation,
-                    content: message
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to send message');
-            }
-
-            // Clear input and reload messages
-            chatInput.value = '';
-            loadMessages(currentConversation);
-        } catch (error) {
-            console.error('Error sending message:', error);
-            alert(error.message);
-        }
-    }
-    
-    // Event Listeners
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && chatInput.value.trim() !== '') {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-    
-    sendBtn.addEventListener('click', () => {
-        if (chatInput.value.trim() !== '') {
-            sendMessage();
-        }
-    });
-
-    // Conversation click handler
-    conversationsList.addEventListener('click', (e) => {
-        const conversation = e.target.closest('.conversation');
-        if (conversation) {
-            const userId = conversation.dataset.userId;
-            
-            // Update active conversation
-            document.querySelectorAll('.conversation').forEach(c => c.classList.remove('active'));
-            conversation.classList.add('active');
-            
-            // Update chat header
-            const userName = conversation.querySelector('h4').textContent;
-            const chatHeader = document.querySelector('.chat-header .chat-user h3');
-            if (chatHeader) {
-                chatHeader.textContent = userName;
-            }
-            
-            // Load messages
-            loadMessages(userId);
-        }
-    });
-
-    // Search functionality
-    messagesSearch.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const conversations = document.querySelectorAll('.conversation');
-        
-        conversations.forEach(conv => {
-            const userName = conv.querySelector('h4').textContent.toLowerCase();
-            const lastMessage = conv.querySelector('p').textContent.toLowerCase();
-            
-            if (userName.includes(searchTerm) || lastMessage.includes(searchTerm)) {
-                conv.style.display = 'flex';
-            } else {
-                conv.style.display = 'none';
-            }
-        });
-    });
-
-    // Initial load
-    loadConversations();
-}
-
 // Handle mobile responsiveness
 function handleMobileLayout() {
     const screenWidth = window.innerWidth;
@@ -1389,9 +1175,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set up accordion for FAQs
     setupAccordion();
     
-    // Set up chat functionality
-    setupChatFunctionality();
-    
     // Handle mobile layout
     handleMobileLayout();
     window.addEventListener('resize', handleMobileLayout);
@@ -1531,18 +1314,115 @@ async function loadPendingOrders() {
             }).join('');
 
             // Add contact and cancel order functions
-            window.contactCollector = function(orderId) {
-                // Implement contact collector functionality
+            window.contactCollector = async function(orderId) {
                 console.log('Contacting collector for order:', orderId);
-                alert('Opening chat with collector...');
+                
+                try {
+                    // Fetch order details
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`http://localhost:5000/api/listings/${orderId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch order details');
+                    }
+
+                    const order = await response.json();
+                    
+                    // Remove any existing popup
+                    const existingPopup = document.querySelector('.contact-popup');
+                    if (existingPopup) {
+                        existingPopup.remove();
+                    }
+
+                    // Create popup
+                    const popup = document.createElement('div');
+                    popup.className = 'contact-popup';
+                    popup.innerHTML = `
+                        <div class="popup-content">
+                            <div class="popup-header">
+                                <h3>Contact Collector</h3>
+                                <button class="close-popup">&times;</button>
+                            </div>
+                            <div class="collector-details">
+                                <div class="detail-row">
+                                    <span class="label">Collector Name:</span>
+                                    <span class="value">${order.pickupDetails?.collectorName || 'Not available'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Phone Number:</span>
+                                    <span class="value">${order.pickupDetails?.phoneNumber || 'Not available'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Pickup Date:</span>
+                                    <span class="value">${order.pickupDetails ? new Date(order.pickupDetails.pickupDate).toLocaleDateString() : 'Not set'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Pickup Time:</span>
+                                    <span class="value">${order.pickupDetails?.pickupTime || 'Not set'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Add popup to body
+                    document.body.appendChild(popup);
+
+                    // Add close functionality
+                    const closeBtn = popup.querySelector('.close-popup');
+                    closeBtn.addEventListener('click', () => {
+                        popup.remove();
+                    });
+
+                    // Close on outside click
+                    popup.addEventListener('click', (e) => {
+                        if (e.target === popup) {
+                            popup.remove();
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Error fetching collector details:', error);
+                    alert('Failed to load collector details. Please try again.');
+                }
             };
 
-            window.cancelOrder = function(orderId) {
+            window.cancelOrder = async function(orderId) {
                 if (confirm('Are you sure you want to cancel this order?')) {
-                    console.log('Cancelling order:', orderId);
-                    // Implement order cancellation logic here
-                    alert('Order cancelled successfully!');
-                    loadPendingOrders(); // Refresh the orders list
+                    try {
+                        const token = localStorage.getItem('token');
+                        if (!token) {
+                            throw new Error('Please login to cancel the order');
+                        }
+
+                        // Update the order status to in_review
+                        const response = await fetch(`http://localhost:5000/api/listings/${orderId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                status: 'in_review'
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Failed to cancel order');
+                        }
+
+                        alert('Order cancelled successfully!');
+                        
+                        // Refresh both orders and listings
+                        loadPendingOrders();
+                        fetchListings();
+                    } catch (error) {
+                        console.error('Error cancelling order:', error);
+                        alert(error.message || 'Failed to cancel order. Please try again.');
+                    }
                 }
             };
 

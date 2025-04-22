@@ -187,7 +187,6 @@ router.delete('/:id', async (req, res) => {
 // Update a listing
 router.put('/:id', async (req, res) => {
     try {
-        const { category, description, quantity, addressLine, city, pincode, photo, status } = req.body;
         const listing = await Listing.findOne({ 
             _id: req.params.id,
             user: req.user.id  // Only allow updates to user's own listings
@@ -197,15 +196,15 @@ router.put('/:id', async (req, res) => {
             return res.status(404).json({ msg: 'Listing not found' });
         }
         
-        // Update listing fields
-        listing.category = category;
-        listing.description = description;
-        listing.quantity = quantity;
-        listing.addressLine = addressLine;
-        listing.city = city;
-        listing.pincode = pincode;
-        listing.photo = photo;
-        if (status) listing.status = status; // Only update status if provided
+        // Update only the fields that are provided
+        if (req.body.category) listing.category = req.body.category;
+        if (req.body.description) listing.description = req.body.description;
+        if (req.body.quantity) listing.quantity = req.body.quantity;
+        if (req.body.addressLine) listing.addressLine = req.body.addressLine;
+        if (req.body.city) listing.city = req.body.city;
+        if (req.body.pincode) listing.pincode = req.body.pincode;
+        if (req.body.photo) listing.photo = req.body.photo;
+        if (req.body.status) listing.status = req.body.status;
         
         await listing.save();
         res.json(listing);

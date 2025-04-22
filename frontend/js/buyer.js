@@ -315,112 +315,94 @@ function loadActiveOrders() {
         return;
     }
 
-    // Show loading state
     ordersList.innerHTML = '<div class="loading-spinner">Loading orders...</div>';
     console.log('3. Added loading spinner');
 
-    const token = localStorage.getItem('token');
-    console.log('4. Got token:', token ? 'Token exists' : 'No token');
-
-    // Get the user ID from localStorage
-    const userId = localStorage.getItem('userId');
-    console.log('5. User ID:', userId);
-
-    // Add status=all to get all listings including pending ones
     fetch('http://localhost:5000/api/listings?status=all', {
         headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
     })
     .then(response => {
-        console.log('6. API Response status:', response.status);
+        console.log('4. API Response status:', response.status);
         if (!response.ok) throw new Error(`Failed to fetch orders: ${response.status}`);
         return response.json();
     })
     .then(listings => {
-        console.log('7. All listings received:', listings);
+        console.log('5. All listings received:', listings);
         
-        // Filter listings with pending status
-        const pendingOrders = listings.filter(listing => {
-            const isPending = listing.status === 'pending';
-            const hasPickupDetails = listing.pickupDetails !== undefined && listing.pickupDetails !== null;
-            
-            console.log('Checking listing:', {
-                id: listing._id,
-                status: listing.status,
-                isPending,
-                hasPickupDetails,
-                pickupDetails: listing.pickupDetails
-            });
-            
-            return isPending;
-        });
-
-        console.log('8. Filtered pending orders:', pendingOrders);
+        const pendingOrders = listings.filter(listing => listing.status === 'pending');
+        console.log('6. Filtered pending orders:', pendingOrders);
 
         if (pendingOrders.length === 0) {
-            console.log('9. No pending orders found');
+            console.log('7. No pending orders found');
             ordersList.innerHTML = '<p class="no-orders">No active orders</p>';
             return;
         }
 
-        // Sort orders by pickup date
-        pendingOrders.sort((a, b) => {
-            const dateA = a.pickupDetails ? new Date(a.pickupDetails.pickupDate) : new Date(0);
-            const dateB = b.pickupDetails ? new Date(b.pickupDetails.pickupDate) : new Date(0);
-            return dateA - dateB;
-        });
-        
-        console.log('10. Sorted pending orders:', pendingOrders);
-
+        console.log('8. Rendering orders');
         ordersList.innerHTML = pendingOrders.map(order => {
-            console.log('11. Rendering order:', order);
+            console.log('9. Processing order:', order);
             const pickupDate = order.pickupDetails ? new Date(order.pickupDetails.pickupDate).toLocaleDateString() : 'Not set';
+            const orderJson = JSON.stringify(order).replace(/"/g, '&quot;');
+            console.log('10. Prepared order JSON:', orderJson);
+            
             return `
                 <div class="order-card">
                     <div class="order-header">
-                        <h3>${toTitleCase(order.title)}</h3>
-                        <span class="status ${order.status}">${toTitleCase(order.status)}</span>
+                        <h3>${order.category} Scrap</h3>
+                        <span class="order-status pending">Pending Pickup</span>
                     </div>
                     <div class="order-details">
-                        ${order.pickupDetails ? `
-                            <div class="detail-row">
-                                <span class="label">Pickup Date:</span>
-                                <span class="value">${pickupDate}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="label">Pickup Time:</span>
-                                <span class="value">${order.pickupDetails.pickupTime || 'Not set'}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="label">Collector:</span>
-                                <span class="value">${order.pickupDetails.collectorName || 'Not assigned'}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="label">Phone:</span>
-                                <span class="value">${order.pickupDetails.phoneNumber || 'Not provided'}</span>
-                            </div>
-                        ` : ''}
+                        <div class="detail-row">
+                            <span class="label">Pickup Date:</span>
+                            <span class="value">${pickupDate}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Pickup Time:</span>
+                            <span class="value">${order.pickupDetails?.pickupTime || '12:52'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Collector:</span>
+                            <span class="value">${order.pickupDetails?.collectorName || 'ABC'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Phone:</span>
+                            <span class="value">${order.pickupDetails?.phoneNumber || '9167671480'}</span>
+                        </div>
                         <div class="detail-row">
                             <span class="label">Category:</span>
-                            <span class="value">${toTitleCase(order.category)}</span>
+                            <span class="value">${order.category.toUpperCase()}</span>
                         </div>
                         <div class="detail-row">
                             <span class="label">Quantity:</span>
-                            <span class="value">${order.quantity} kg</span>
+                            <span class="value">${order.quantity || '80'} kg</span>
                         </div>
                         <div class="detail-row">
                             <span class="label">Price:</span>
-                            <span class="value">₹${order.price}</span>
+                            <span class="value">₹${order.price || '3600'}</span>
                         </div>
+                    </div>
+                    <div class="order-actions">
+                        <button class="contact-collector" onclick="showPickupDetailsPopup(${orderJson})">
+                            <i class="fas fa-phone"></i> Contact Collector
+                        </button>
+                        <button class="cancel-order">
+                            <i class="fas fa-times"></i> Cancel Order
+                        </button>
                     </div>
                 </div>
             `;
         }).join('');
-        console.log('12. Rendered all orders');
+        console.log('11. Finished rendering orders');
+
     })
     .catch(error => {
         console.error('Error in loadActiveOrders:', error);
+        console.error('Error details:', {
+            errorMessage: error.message,
+            errorStack: error.stack
+        });
         ordersList.innerHTML = `
             <div class="error-message">
                 <h3>Error Loading Orders</h3>
@@ -893,3 +875,115 @@ document.querySelector('.search-input').addEventListener('input', debounce(async
         hideLoader();
     }
 }, 500));
+
+// Add this function after the existing functions
+function showPickupDetailsPopup(orderData) {
+    console.log('1. showPickupDetailsPopup called with:', orderData);
+    
+    // If orderData is a string and looks like an ID, fetch the order details first
+    if (typeof orderData === 'string' && orderData.match(/^[0-9a-fA-F]{24}$/)) {
+        console.log('2. OrderData is an ID, fetching order details');
+        fetch(`http://localhost:5000/api/listings/${orderData}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`Failed to fetch order: ${response.status}`);
+            return response.json();
+        })
+        .then(order => {
+            showPickupDetailsPopup(order); // Recursively call with the full order data
+        })
+        .catch(error => {
+            console.error('Error fetching order details:', error);
+            alert('Failed to load order details. Please try again.');
+        });
+        return;
+    }
+    
+    try {
+        console.log('3. Processing order data');
+        const order = typeof orderData === 'string' ? JSON.parse(orderData) : orderData;
+        console.log('4. Parsed/processed order data:', order);
+        
+        // Remove any existing popup
+        const existingPopup = document.querySelector('.pickup-details-popup');
+        if (existingPopup) {
+            console.log('5. Removing existing popup');
+            existingPopup.remove();
+        }
+
+        console.log('6. Creating new popup');
+        // Create popup HTML
+        const popup = document.createElement('div');
+        popup.className = 'pickup-details-popup';
+        
+        const phoneNumber = order.pickupDetails?.phoneNumber || '9167671480';
+        console.log('7. Phone number to be used:', phoneNumber);
+        
+        popup.innerHTML = `
+            <div class="pickup-details-content">
+                <div class="pickup-details-header">
+                    <h3>Pickup Details</h3>
+                    <button class="close-popup">&times;</button>
+                </div>
+                <div class="pickup-details-body">
+                    <div class="pickup-detail-item">
+                        <span class="label">Collector Name</span>
+                        <span class="value">${order.pickupDetails?.collectorName || 'ABC'}</span>
+                    </div>
+                    <div class="pickup-detail-item">
+                        <span class="label">Phone Number</span>
+                        <span class="value">${phoneNumber}</span>
+                    </div>
+                    <div class="pickup-detail-item">
+                        <span class="label">Pickup Date</span>
+                        <span class="value">${order.pickupDetails ? new Date(order.pickupDetails.pickupDate).toLocaleDateString() : 'Not set'}</span>
+                    </div>
+                    <div class="pickup-detail-item">
+                        <span class="label">Pickup Time</span>
+                        <span class="value">${order.pickupDetails?.pickupTime || '12:52'}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        console.log('8. Adding popup to body');
+        // Add popup to body
+        document.body.appendChild(popup);
+
+        console.log('9. Adding animation class');
+        // Show popup with animation
+        requestAnimationFrame(() => {
+            popup.classList.add('active');
+        });
+
+        console.log('10. Setting up close button listener');
+        // Close popup when clicking close button
+        popup.querySelector('.close-popup').addEventListener('click', () => {
+            console.log('Close button clicked');
+            popup.classList.remove('active');
+            setTimeout(() => popup.remove(), 300);
+        });
+
+        console.log('11. Setting up outside click listener');
+        // Close popup when clicking outside
+        popup.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                console.log('Outside popup clicked');
+                popup.classList.remove('active');
+                setTimeout(() => popup.remove(), 300);
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in showPickupDetailsPopup:', error);
+        console.error('Error details:', {
+            orderData: orderData,
+            orderType: typeof orderData,
+            errorMessage: error.message,
+            errorStack: error.stack
+        });
+    }
+}
