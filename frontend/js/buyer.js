@@ -215,37 +215,94 @@ function loadSectionData(section) {
 
 // API Integration Functions (to be implemented based on backend API)
 function loadDashboardStats() {
-    // Set all stats to zero
-    const stats = {
-        totalOrders: 0,
-        activeOrders: 0,
-        savedListings: 0,
-        totalSpent: 0
-    };
-
-    // Update the DOM with zero values
-    document.querySelectorAll('.stat-number').forEach(stat => {
-        const statType = stat.closest('.stat-card').querySelector('h3').textContent;
-        switch(statType) {
-            case 'Total Orders':
-                stat.textContent = stats.totalOrders;
-                break;
-            case 'Active Orders':
-                stat.textContent = stats.activeOrders;
-                break;
-            case 'Saved Listings':
-                stat.textContent = stats.savedListings;
-                break;
-            case 'Total Spent':
-                stat.textContent = `₹${stats.totalSpent}`;
-                break;
+    // Fetch total listings count
+    fetch('http://localhost:5000/api/listings', {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-    });
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to fetch listings');
+        }
+        return response.json();
+    })
+    .then(listings => {
+        console.log('Fetched listings:', listings); // Debug log
+        
+        // Update the DOM with total listings
+        document.querySelector('.stat-card:nth-child(1) h3').textContent = 'Total Listings';
+        document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = listings.length;
+        
+        // Set other stats to 0
+        document.querySelector('.stat-card:nth-child(2) .stat-number').textContent = '0';
+        document.querySelector('.stat-card:nth-child(3) .stat-number').textContent = '0';
+        document.querySelector('.stat-card:nth-child(4) .stat-number').textContent = '₹0';
 
-    // Remove the stat-change elements
-    document.querySelectorAll('.stat-change').forEach(change => {
-        change.remove();
+        // Fixed scrap rates
+        const scrapRates = [
+            { category: 'Metal', price: 35, icon: 'cog' },
+            { category: 'E-waste', price: 45, icon: 'laptop' },
+            { category: 'Plastic', price: 15, icon: 'wine-bottle' },
+            { category: 'Paper', price: 12, icon: 'newspaper' },
+            { category: 'Glass', price: 8, icon: 'wine-glass' },
+            { category: 'Wood', price: 10, icon: 'tree' }
+        ];
+
+        // Create category prices section with current rates
+        const categoryPricesSection = document.createElement('div');
+        categoryPricesSection.className = 'category-prices-section';
+        categoryPricesSection.innerHTML = `
+            <h3 class="section-title">Current Scrap Rates (₹/kg)</h3>
+            <div class="category-prices-grid">
+                ${scrapRates.map(item => `
+                    <div class="category-price-card">
+                        <div class="category-icon">
+                            <i class="fas fa-${item.icon}"></i>
+                        </div>
+                        <div class="category-info">
+                            <h4>${item.category} Scrap</h4>
+                            <div class="price-info">
+                                <span class="avg-price">₹${item.price}/kg</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        // Remove ongoing orders section if it exists
+        const ongoingOrdersSection = document.querySelector('.ongoing-orders-section');
+        if (ongoingOrdersSection) {
+            ongoingOrdersSection.remove();
+        }
+
+        // Remove existing category prices section if it exists
+        const existingCategoryPricesSection = document.querySelector('.category-prices-section');
+        if (existingCategoryPricesSection) {
+            existingCategoryPricesSection.remove();
+        }
+
+        // Add category prices section after stats grid
+        const statsGrid = document.querySelector('.stats-grid');
+        statsGrid.parentNode.insertBefore(categoryPricesSection, statsGrid.nextSibling);
+    })
+    .catch(error => {
+        console.error('Error loading dashboard stats:', error);
+        // Show error message to user
+        document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = 'Error';
     });
+}
+
+function getCategoryIcon(category) {
+    const icons = {
+        metal: 'bolt',
+        plastic: 'recycle',
+        ewaste: 'laptop',
+        paper: 'file-alt',
+        glass: 'wine-glass'
+    };
+    return icons[category] || 'box';
 }
 
 function loadActiveOrders() {
@@ -320,64 +377,147 @@ function displayListings(listings) {
         return;
     }
 
+    // Function to convert to title case
+    function toTitleCase(str) {
+        return str.split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    }
+
     listingsGrid.innerHTML = listings.map(listing => `
         <div class="listing-card" data-id="${listing._id}">
             <div class="listing-image">
-                <img src="${listing.photo || 'https://via.placeholder.com/300x200'}" alt="${listing.title}">
-                <div class="listing-category">${listing.category}</div>
-                <div class="listing-status ${listing.status}">${listing.status}</div>
+                <img src="${listing.photo || 'https://via.placeholder.com/300x200'}" alt="${toTitleCase(listing.title)}">
+                <div class="listing-category">${toTitleCase(listing.category)}</div>
             </div>
             <div class="listing-details">
-                <h3>${listing.title}</h3>
+                <h3>${toTitleCase(listing.title)}</h3>
                 <div class="listing-meta">
-                    <span><i class="fas fa-weight-hanging"></i> ${listing.quantity} kg</span>
-                    <span><i class="fas fa-map-marker-alt"></i> ${listing.city}</span>
+                    <div class="meta-item">
+                        <i class="fas fa-weight-hanging"></i>
+                        <span>${listing.quantity} kg</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>${listing.city}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>₹${listing.price}</span>
+                    </div>
                 </div>
-                <div class="listing-price">₹${listing.price}/kg</div>
                 <div class="seller-info">
-                    <span><i class="fas fa-user"></i> ${listing.user?.firstName || 'Unknown'} ${listing.user?.lastName || ''}</span>
-                    <span class="seller-rating">
-                        <i class="fas fa-star"></i> ${listing.user?.rating || 'N/A'}
-                    </span>
+                    <i class="fas fa-user"></i>
+                    <span>${listing.user ? toTitleCase(listing.user.firstName + ' ' + listing.user.lastName) : 'Unknown'}</span>
                 </div>
             </div>
             <div class="listing-actions">
-                <button class="save-btn"><i class="far fa-star"></i></button>
-                <button class="view-btn">View Details</button>
-                <button class="primary-btn">Add to Cart</button>
+                <button class="action-btn save-btn">
+                    <i class="far fa-star"></i>
+                    <span>Save</span>
+                </button>
+                <button class="action-btn view-btn" onclick="showListingDetails('${listing._id}')">
+                    <i class="fas fa-eye"></i>
+                    <span>View Details</span>
+                </button>
+                <button class="action-btn pickup-btn">
+                    <i class="fas fa-truck"></i>
+                    <span>Pickup</span>
+                </button>
             </div>
         </div>
     `).join('');
 
-    // Add CSS for status colors
-    const style = document.createElement('style');
-    style.textContent = `
-        .listing-status {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            border-radius: 15px;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .listing-status.approved {
-            background-color: #28a745;
-        }
-        .listing-status.pending {
-            background-color: #ffc107;
-        }
-        .listing-status.in_review {
-            background-color: #17a2b8;
-        }
-        .listing-status.rejected {
-            background-color: #dc3545;
-        }
-    `;
-    document.head.appendChild(style);
+    // Add event listeners for the save buttons
+    document.querySelectorAll('.save-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.classList.toggle('saved');
+            const icon = this.querySelector('i');
+            if (this.classList.contains('saved')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            }
+        });
+    });
 }
+
+// Function to show listing details in a popup
+function showListingDetails(listingId) {
+    fetch(`http://localhost:5000/api/listings/${listingId}`, {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+    })
+    .then(response => response.json())
+    .then(listing => {
+        const modal = document.getElementById('orderDetailsModal');
+        const modalContent = modal.querySelector('.modal-content');
+        
+        modalContent.innerHTML = `
+            <div class="modal-header">
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="listing-detail-content">
+                <div class="listing-detail-image">
+                    <img src="${listing.photo || 'https://via.placeholder.com/600x300'}" alt="${listing.title}">
+                </div>
+                <div class="listing-detail-info">
+                    <div class="detail-row">
+                        <span class="label">Category</span>
+                        <span class="value">${listing.category}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Description</span>
+                        <span class="value description">${listing.description}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Quantity</span>
+                        <span class="value">${listing.quantity} kg</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Address Line</span>
+                        <span class="value">${listing.address || 'Not specified'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Pin Code</span>
+                        <span class="value">${listing.pincode || 'Not specified'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">City</span>
+                        <span class="value">${listing.city}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Phone Number</span>
+                        <span class="value">N/A</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        modal.style.display = 'block';
+
+        // Add event listener to close button
+        const closeButton = modalContent.querySelector('.close-modal');
+        closeButton.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching listing details:', error);
+        alert('Failed to load listing details. Please try again.');
+    });
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', (event) => {
+    const modal = document.getElementById('orderDetailsModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
 
 function loadAllOrders() {
     // Fetch and display all orders
