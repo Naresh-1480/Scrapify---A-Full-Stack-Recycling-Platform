@@ -18,17 +18,18 @@ navLinks.forEach(link => {
             }
         });
 
-        // Set up form handler if we're on the sell page
+        // Load appropriate data based on the section
         if (page === 'sell') {
             setTimeout(() => {
                 setupFormHandlers();
             }, 0);
-        }
-        
-        // Fetch listings if we're on the listings page
-        if (page === 'listings') {
+        } else if (page === 'listings') {
             setTimeout(() => {
                 fetchListings();
+            }, 0);
+        } else if (page === 'orders') {
+            setTimeout(() => {
+                loadPendingOrders();
             }, 0);
         }
     });
@@ -290,7 +291,6 @@ function calculatePrice(category, quantity) {
 async function fetchListings() {
     console.log("Fetching seller's listings...");
     try {
-        // Get the authentication token from localStorage
         const token = localStorage.getItem('token');
         
         if (!token) {
@@ -298,7 +298,6 @@ async function fetchListings() {
             return;
         }
 
-        // Add timestamp to prevent caching
         const response = await fetch(`http://localhost:5000/api/listings/my?t=${Date.now()}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -313,8 +312,6 @@ async function fetchListings() {
         if (response.ok) {
             const listings = await response.json();
             console.log('Fetched listings:', listings);
-            console.log('Number of listings:', listings.length);
-            console.log('Listing IDs:', listings.map(l => l._id));
             
             const listingsContainer = document.querySelector('.listings-grid');
             const statusFilter = document.getElementById('listingStatus');
@@ -323,15 +320,18 @@ async function fetchListings() {
                 // Clear existing content
                 listingsContainer.innerHTML = '';
                 
-                if (listings.length === 0) {
+                // Filter out pending listings from the main listings grid
+                let availableListings = listings.filter(listing => listing.status !== 'pending');
+
+                if (availableListings.length === 0) {
                     listingsContainer.innerHTML = '<p class="no-listings">No listings found. Create a new listing to get started!</p>';
                     return;
                 }
 
                 // Filter listings based on status
-                let filteredListings = listings;
+                let filteredListings = availableListings;
                 if (statusFilter && statusFilter.value !== 'all') {
-                    filteredListings = listings.filter(listing => {
+                    filteredListings = availableListings.filter(listing => {
                         switch(statusFilter.value) {
                             case 'active':
                                 return listing.status === 'approved';
@@ -377,7 +377,7 @@ async function fetchListings() {
                     
                     listingElement.innerHTML = `
                         <div class="listing-image">
-                            <img src="${listing.photo || 'https://via.placeholder.com/300x200'}" alt="${listing.title || listing.category}">
+                            <img src="${listing.photo || 'placeholder.jpg'}" alt="${listing.title || listing.category}" onerror="this.src='assets/images/placeholder.jpg'">
                             <div class="listing-category">${listing.category.toUpperCase()}</div>
                             <div class="listing-status ${statusClass}">${statusText}</div>
                         </div>
@@ -1416,3 +1416,275 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('resize', () => {
     handleMobileLayout();
 });
+
+// Add this new function to load pending orders
+async function loadPendingOrders() {
+    console.log("Loading pending orders...");
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No authentication token found');
+            return;
+        }
+
+        const ordersContainer = document.querySelector('.orders-list');
+        if (!ordersContainer) {
+            console.error('Orders container not found');
+            return;
+        }
+
+        // Show loading spinner
+        ordersContainer.innerHTML = `
+            <div class="orders-loading">
+                <div class="loading-spinner"></div>
+            </div>
+        `;
+
+        const response = await fetch(`http://localhost:5000/api/listings/my?t=${Date.now()}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+
+        if (response.ok) {
+            const listings = await response.json();
+            console.log('Fetched all listings for pending orders:', listings);
+
+            // Filter only pending listings
+            const pendingOrders = listings.filter(listing => listing.status === 'pending');
+            console.log('Filtered pending orders:', pendingOrders);
+
+            if (pendingOrders.length === 0) {
+                ordersContainer.innerHTML = `
+                    <div class="no-orders">
+                        <i class="fas fa-box-open"></i>
+                        <p>No pending orders at the moment</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort orders by pickup date
+            pendingOrders.sort((a, b) => {
+                const dateA = a.pickupDetails ? new Date(a.pickupDetails.pickupDate) : new Date(0);
+                const dateB = b.pickupDetails ? new Date(b.pickupDetails.pickupDate) : new Date(0);
+                return dateA - dateB;
+            });
+
+            ordersContainer.innerHTML = pendingOrders.map(order => {
+                const pickupDate = order.pickupDetails ? new Date(order.pickupDetails.pickupDate).toLocaleDateString() : 'Not set';
+                const pickupTime = order.pickupDetails?.pickupTime || 'Not set';
+                
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <h3>${order.title || `${order.category.toUpperCase()} Scrap`}</h3>
+                            <span class="status pending">Pending Pickup</span>
+                        </div>
+                        <div class="order-details">
+                            <div class="detail-row">
+                                <span class="label">Pickup Date:</span>
+                                <span class="value">${pickupDate}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Pickup Time:</span>
+                                <span class="value">${pickupTime}</span>
+                            </div>
+                            ${order.pickupDetails?.collectorName ? `
+                                <div class="detail-row">
+                                    <span class="label">Collector:</span>
+                                    <span class="value">${order.pickupDetails.collectorName}</span>
+                                </div>
+                            ` : ''}
+                            ${order.pickupDetails?.phoneNumber ? `
+                                <div class="detail-row">
+                                    <span class="label">Phone:</span>
+                                    <span class="value">${order.pickupDetails.phoneNumber}</span>
+                                </div>
+                            ` : ''}
+                            <div class="detail-row">
+                                <span class="label">Category:</span>
+                                <span class="value">${order.category.toUpperCase()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Quantity:</span>
+                                <span class="value">${order.quantity} kg</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Price:</span>
+                                <span class="value">₹${order.price}</span>
+                            </div>
+                        </div>
+                        <div class="order-actions">
+                            <button class="order-btn contact-btn" onclick="contactCollector('${order._id}')">
+                                <i class="fas fa-phone-alt"></i> Contact Collector
+                            </button>
+                            <button class="order-btn reject-btn" onclick="cancelOrder('${order._id}')">
+                                <i class="fas fa-times"></i> Cancel Order
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add contact and cancel order functions
+            window.contactCollector = function(orderId) {
+                // Implement contact collector functionality
+                console.log('Contacting collector for order:', orderId);
+                alert('Opening chat with collector...');
+            };
+
+            window.cancelOrder = function(orderId) {
+                if (confirm('Are you sure you want to cancel this order?')) {
+                    console.log('Cancelling order:', orderId);
+                    // Implement order cancellation logic here
+                    alert('Order cancelled successfully!');
+                    loadPendingOrders(); // Refresh the orders list
+                }
+            };
+
+        } else {
+            throw new Error('Failed to fetch orders');
+        }
+    } catch (error) {
+        console.error('Error loading pending orders:', error);
+        const ordersContainer = document.querySelector('.orders-list');
+        if (ordersContainer) {
+            ordersContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Failed to load pending orders. Please try again.</p>
+                </div>
+            `;
+        }
+    }
+}
+
+async function loadCompletedOrders() {
+    console.log("Loading completed orders...");
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No authentication token found');
+            return;
+        }
+
+        const ordersContainer = document.querySelector('.orders-list');
+        if (!ordersContainer) {
+            console.error('Orders container not found');
+            return;
+        }
+
+        // Show loading spinner
+        ordersContainer.innerHTML = `
+            <div class="orders-loading">
+                <div class="loading-spinner"></div>
+            </div>
+        `;
+
+        const response = await fetch(`http://localhost:5000/api/listings/my?t=${Date.now()}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+
+        if (response.ok) {
+            const listings = await response.json();
+            console.log('Fetched all listings for completed orders:', listings);
+
+            // Filter only completed listings
+            const completedOrders = listings.filter(listing => listing.status === 'completed');
+            console.log('Filtered completed orders:', completedOrders);
+
+            if (completedOrders.length === 0) {
+                ordersContainer.innerHTML = `
+                    <div class="no-orders">
+                        <i class="fas fa-check-circle"></i>
+                        <p>No completed orders yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort orders by completion date (newest first)
+            completedOrders.sort((a, b) => {
+                const dateA = a.completedAt ? new Date(a.completedAt) : new Date(0);
+                const dateB = b.completedAt ? new Date(b.completedAt) : new Date(0);
+                return dateB - dateA;
+            });
+
+            ordersContainer.innerHTML = completedOrders.map(order => {
+                const completedDate = order.completedAt ? new Date(order.completedAt).toLocaleDateString() : 'Unknown';
+                const pickupDate = order.pickupDetails ? new Date(order.pickupDetails.pickupDate).toLocaleDateString() : 'Not recorded';
+                
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <h3>${order.title || `${order.category.toUpperCase()} Scrap`}</h3>
+                            <span class="status completed">Completed</span>
+                        </div>
+                        <div class="order-details">
+                            <div class="detail-row">
+                                <span class="label">Completed On:</span>
+                                <span class="value">${completedDate}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Pickup Date:</span>
+                                <span class="value">${pickupDate}</span>
+                            </div>
+                            ${order.pickupDetails?.collectorName ? `
+                                <div class="detail-row">
+                                    <span class="label">Collector:</span>
+                                    <span class="value">${order.pickupDetails.collectorName}</span>
+                                </div>
+                            ` : ''}
+                            <div class="detail-row">
+                                <span class="label">Category:</span>
+                                <span class="value">${order.category.toUpperCase()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Quantity:</span>
+                                <span class="value">${order.quantity} kg</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Price:</span>
+                                <span class="value">₹${order.price}</span>
+                            </div>
+                        </div>
+                        <div class="order-actions">
+                            <button class="order-btn review-btn" onclick="reviewOrder('${order._id}')">
+                                <i class="fas fa-star"></i> Write Review
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add review function
+            window.reviewOrder = function(orderId) {
+                console.log('Opening review form for order:', orderId);
+                alert('Review feature coming soon!');
+            };
+
+        } else {
+            throw new Error('Failed to fetch orders');
+        }
+    } catch (error) {
+        console.error('Error loading completed orders:', error);
+        const ordersContainer = document.querySelector('.orders-list');
+        if (ordersContainer) {
+            ordersContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Failed to load completed orders. Please try again.</p>
+                </div>
+            `;
+        }
+    }
+}

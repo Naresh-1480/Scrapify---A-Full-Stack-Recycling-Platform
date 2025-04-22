@@ -73,11 +73,22 @@ router.get('/', async (req, res) => {
         console.log('GET /api/listings - Request received');
         console.log('User from token:', req.user);
         
-        const { city } = req.query;
+        const { city, status } = req.query;
         let query = {};
         
         if (city) {
             query.city = city.toUpperCase();
+        }
+
+        // If status is 'all', don't filter by status
+        // If status is not specified, show all listings except those in 'pending' or 'sold' status
+        // If specific status is provided, filter by that status
+        if (status === 'all') {
+            // Don't add status to query to get all listings
+        } else if (!status) {
+            query.status = { $nin: ['pending', 'sold'] };
+        } else {
+            query.status = status;
         }
         
         console.log('Database query:', JSON.stringify(query));
@@ -227,6 +238,36 @@ router.post('/debug/create-test', async (req, res) => {
     } catch (err) {
         console.error('Error creating test listing:', err);
         res.status(500).json({ message: 'Error creating test listing' });
+    }
+});
+
+// Schedule pickup for a listing
+router.post('/schedule-pickup', async (req, res) => {
+    try {
+        const { listingId, collectorName, phoneNumber, pickupDate, pickupTime } = req.body;
+        
+        // Find the listing
+        const listing = await Listing.findById(listingId);
+        if (!listing) {
+            return res.status(404).json({ message: 'Listing not found' });
+        }
+
+        // Update listing status to pending
+        listing.status = 'pending';
+        listing.pickupDetails = {
+            collectorName,
+            phoneNumber,
+            pickupDate,
+            pickupTime,
+            scheduledBy: req.user.id
+        };
+
+        await listing.save();
+        
+        res.json({ message: 'Pickup scheduled successfully', listing });
+    } catch (err) {
+        console.error('Error scheduling pickup:', err);
+        res.status(500).json({ message: 'Error scheduling pickup' });
     }
 });
 

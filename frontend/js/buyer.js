@@ -306,10 +306,129 @@ function getCategoryIcon(category) {
 }
 
 function loadActiveOrders() {
+    console.log('1. Starting loadActiveOrders function');
     const ordersList = document.querySelector('.orders-list');
-    if (ordersList) {
-        ordersList.innerHTML = '<p class="no-orders">No active orders</p>';
+    console.log('2. Orders list element:', ordersList);
+    
+    if (!ordersList) {
+        console.error('Orders list element not found!');
+        return;
     }
+
+    // Show loading state
+    ordersList.innerHTML = '<div class="loading-spinner">Loading orders...</div>';
+    console.log('3. Added loading spinner');
+
+    const token = localStorage.getItem('token');
+    console.log('4. Got token:', token ? 'Token exists' : 'No token');
+
+    // Get the user ID from localStorage
+    const userId = localStorage.getItem('userId');
+    console.log('5. User ID:', userId);
+
+    // Add status=all to get all listings including pending ones
+    fetch('http://localhost:5000/api/listings?status=all', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        console.log('6. API Response status:', response.status);
+        if (!response.ok) throw new Error(`Failed to fetch orders: ${response.status}`);
+        return response.json();
+    })
+    .then(listings => {
+        console.log('7. All listings received:', listings);
+        
+        // Filter listings with pending status
+        const pendingOrders = listings.filter(listing => {
+            const isPending = listing.status === 'pending';
+            const hasPickupDetails = listing.pickupDetails !== undefined && listing.pickupDetails !== null;
+            
+            console.log('Checking listing:', {
+                id: listing._id,
+                status: listing.status,
+                isPending,
+                hasPickupDetails,
+                pickupDetails: listing.pickupDetails
+            });
+            
+            return isPending;
+        });
+
+        console.log('8. Filtered pending orders:', pendingOrders);
+
+        if (pendingOrders.length === 0) {
+            console.log('9. No pending orders found');
+            ordersList.innerHTML = '<p class="no-orders">No active orders</p>';
+            return;
+        }
+
+        // Sort orders by pickup date
+        pendingOrders.sort((a, b) => {
+            const dateA = a.pickupDetails ? new Date(a.pickupDetails.pickupDate) : new Date(0);
+            const dateB = b.pickupDetails ? new Date(b.pickupDetails.pickupDate) : new Date(0);
+            return dateA - dateB;
+        });
+        
+        console.log('10. Sorted pending orders:', pendingOrders);
+
+        ordersList.innerHTML = pendingOrders.map(order => {
+            console.log('11. Rendering order:', order);
+            const pickupDate = order.pickupDetails ? new Date(order.pickupDetails.pickupDate).toLocaleDateString() : 'Not set';
+            return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <h3>${toTitleCase(order.title)}</h3>
+                        <span class="status ${order.status}">${toTitleCase(order.status)}</span>
+                    </div>
+                    <div class="order-details">
+                        ${order.pickupDetails ? `
+                            <div class="detail-row">
+                                <span class="label">Pickup Date:</span>
+                                <span class="value">${pickupDate}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Pickup Time:</span>
+                                <span class="value">${order.pickupDetails.pickupTime || 'Not set'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Collector:</span>
+                                <span class="value">${order.pickupDetails.collectorName || 'Not assigned'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Phone:</span>
+                                <span class="value">${order.pickupDetails.phoneNumber || 'Not provided'}</span>
+                            </div>
+                        ` : ''}
+                        <div class="detail-row">
+                            <span class="label">Category:</span>
+                            <span class="value">${toTitleCase(order.category)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Quantity:</span>
+                            <span class="value">${order.quantity} kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Price:</span>
+                            <span class="value">₹${order.price}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        console.log('12. Rendered all orders');
+    })
+    .catch(error => {
+        console.error('Error in loadActiveOrders:', error);
+        ordersList.innerHTML = `
+            <div class="error-message">
+                <h3>Error Loading Orders</h3>
+                <p>Failed to load your orders. Please try again later.</p>
+                <p>Error details: ${error.message}</p>
+            </div>
+        `;
+    });
 }
 
 async function loadScrapListings() {
@@ -350,25 +469,123 @@ async function loadScrapListings() {
             throw new Error('Invalid response format');
         }
         
-        console.log(`Found ${listings.length} listings`);
-        displayListings(listings);
+        // Filter out listings that are not in 'in_review' status
+        const availableListings = listings.filter(listing => listing.status === 'in_review');
+        console.log(`Found ${availableListings.length} available listings`);
+        
+        displayListings(availableListings);
     } catch (error) {
         console.error('Error loading listings:', error);
-        document.querySelector('.listings-grid').innerHTML = `
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>${error.message === 'No authentication token found' ? 'Please log in to view listings' : 'Failed to load listings. Please try again later.'}</p>
-            </div>
-        `;
+        const listingsContainer = document.getElementById('listingsContainer');
+        if (listingsContainer) {
+            listingsContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>${error.message === 'No authentication token found' ? 'Please log in to view listings' : 'Failed to load listings. Please try again later.'}</p>
+                </div>
+            `;
+        }
     } finally {
         hideLoader();
     }
 }
 
+function showPickupPopup(listingId) {
+    // Remove any existing popups
+    const existingPopup = document.querySelector('.popup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+
+    const popup = document.createElement('div');
+    popup.className = 'popup';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <span class="close-btn">&times;</span>
+            <h2>Schedule Pickup</h2>
+            <form id="pickupForm">
+                <div class="form-group">
+                    <label for="collectorName">Collector Name:</label>
+                    <input type="text" id="collectorName" required>
+                </div>
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number:</label>
+                    <input type="tel" id="phoneNumber" required>
+                </div>
+                <div class="form-group">
+                    <label for="pickupDate">Pickup Date:</label>
+                    <input type="date" id="pickupDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="pickupTime">Pickup Time:</label>
+                    <input type="time" id="pickupTime" required>
+                </div>
+                <button type="submit" class="btn-primary">Schedule Now</button>
+            </form>
+        </div>
+    `;
+
+    document.body.appendChild(popup);
+
+    // Close popup when clicking the close button
+    popup.querySelector('.close-btn').addEventListener('click', () => {
+        popup.remove();
+    });
+
+    // Close popup when clicking outside
+    popup.addEventListener('click', (e) => {
+        if (e.target === popup) {
+            popup.remove();
+        }
+    });
+
+    // Handle form submission
+    popup.querySelector('#pickupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const pickupData = {
+            collectorName: document.getElementById('collectorName').value,
+            phoneNumber: document.getElementById('phoneNumber').value,
+            pickupDate: document.getElementById('pickupDate').value,
+            pickupTime: document.getElementById('pickupTime').value,
+            listingId: listingId
+        };
+
+        try {
+            const response = await fetch('http://localhost:5000/api/listings/schedule-pickup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(pickupData)
+            });
+
+            if (response.ok) {
+                alert('Pickup Scheduled Successfully!');
+                popup.remove();
+                // Reload the listings to reflect the changes
+                loadScrapListings();
+            } else {
+                const data = await response.json();
+                alert(data.message || 'Failed to schedule pickup');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while scheduling pickup');
+        }
+    });
+}
+
 function displayListings(listings) {
-    const listingsGrid = document.querySelector('.listings-grid');
+    const listingsContainer = document.querySelector('.listings-grid');
+    if (!listingsContainer) {
+        console.error('Listings container not found');
+        return;
+    }
+
     if (!listings || listings.length === 0) {
-        listingsGrid.innerHTML = `
+        listingsContainer.innerHTML = `
             <div class="no-listings">
                 <i class="fas fa-search"></i>
                 <p>No listings found</p>
@@ -377,137 +594,178 @@ function displayListings(listings) {
         return;
     }
 
-    // Function to convert to title case
-    function toTitleCase(str) {
-        return str.split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ');
-    }
-
-    listingsGrid.innerHTML = listings.map(listing => `
-        <div class="listing-card" data-id="${listing._id}">
+    listingsContainer.innerHTML = '';
+    
+    listings.forEach(listing => {
+        const listingCard = document.createElement('div');
+        listingCard.className = 'listing-card';
+        listingCard.innerHTML = `
             <div class="listing-image">
-                <img src="${listing.photo || 'https://via.placeholder.com/300x200'}" alt="${toTitleCase(listing.title)}">
-                <div class="listing-category">${toTitleCase(listing.category)}</div>
+                <img src="${listing.photo || 'placeholder.jpg'}" alt="${listing.title}">
             </div>
             <div class="listing-details">
                 <h3>${toTitleCase(listing.title)}</h3>
-                <div class="listing-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-weight-hanging"></i>
-                        <span>${listing.quantity} kg</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>${listing.city}</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-money-bill-wave"></i>
-                        <span>₹${listing.price}</span>
-                    </div>
-                </div>
-                <div class="seller-info">
-                    <i class="fas fa-user"></i>
-                    <span>${listing.user ? toTitleCase(listing.user.firstName + ' ' + listing.user.lastName) : 'Unknown'}</span>
+                <p class="category">${toTitleCase(listing.category)}</p>
+                <p class="price">₹${listing.price}</p>
+                <p class="location">${listing.city}</p>
+                <div class="listing-actions">
+                    <button class="btn-secondary view-details" data-id="${listing._id}">View Details</button>
+                    <button class="btn-primary schedule-pickup" data-id="${listing._id}">Schedule Pickup</button>
                 </div>
             </div>
-            <div class="listing-actions">
-                <button class="action-btn save-btn">
-                    <i class="far fa-star"></i>
-                    <span>Save</span>
-                </button>
-                <button class="action-btn view-btn" onclick="showListingDetails('${listing._id}')">
-                    <i class="fas fa-eye"></i>
-                    <span>View Details</span>
-                </button>
-                <button class="action-btn pickup-btn">
-                    <i class="fas fa-truck"></i>
-                    <span>Pickup</span>
-                </button>
-            </div>
-        </div>
-    `).join('');
+        `;
 
-    // Add event listeners for the save buttons
-    document.querySelectorAll('.save-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            this.classList.toggle('saved');
-            const icon = this.querySelector('i');
-            if (this.classList.contains('saved')) {
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-            } else {
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-            }
+        // Add event listeners
+        listingCard.querySelector('.view-details').addEventListener('click', () => {
+            showListingDetails(listing._id);
         });
+
+        listingCard.querySelector('.schedule-pickup').addEventListener('click', () => {
+            showPickupPopup(listing._id);
+        });
+
+        listingsContainer.appendChild(listingCard);
     });
+}
+
+// Helper function to convert string to title case
+function toTitleCase(str) {
+    if (!str) return '';
+    return str.split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
 }
 
 // Function to show listing details in a popup
 function showListingDetails(listingId) {
+    // Show loading state
+    const loadingModal = document.createElement('div');
+    loadingModal.className = 'popup';
+    loadingModal.innerHTML = `
+        <div class="popup-content">
+            <div class="loading-spinner">Loading...</div>
+        </div>
+    `;
+    document.body.appendChild(loadingModal);
+
     fetch(`http://localhost:5000/api/listings/${listingId}`, {
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(listing => {
-        const modal = document.getElementById('orderDetailsModal');
-        const modalContent = modal.querySelector('.modal-content');
-        
-        modalContent.innerHTML = `
-            <div class="modal-header">
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="listing-detail-content">
-                <div class="listing-detail-image">
-                    <img src="${listing.photo || 'https://via.placeholder.com/600x300'}" alt="${listing.title}">
-                </div>
-                <div class="listing-detail-info">
-                    <div class="detail-row">
-                        <span class="label">Category</span>
-                        <span class="value">${listing.category}</span>
+        // Remove loading modal
+        loadingModal.remove();
+
+        // Add null checks
+        if (!listing) {
+            throw new Error('No listing data received');
+        }
+
+        const modal = document.createElement('div');
+        modal.className = 'popup';
+        modal.innerHTML = `
+            <div class="popup-content">
+                <span class="close-btn">&times;</span>
+                <div class="listing-detail-content">
+                    <div class="listing-detail-image">
+                        <img src="${listing.photo || 'assets/images/placeholder.jpg'}" alt="${listing.title || 'Listing'}" onerror="this.src='assets/images/placeholder.jpg'">
                     </div>
-                    <div class="detail-row">
-                        <span class="label">Description</span>
-                        <span class="value description">${listing.description}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="label">Quantity</span>
-                        <span class="value">${listing.quantity} kg</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="label">Address Line</span>
-                        <span class="value">${listing.address || 'Not specified'}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="label">Pin Code</span>
-                        <span class="value">${listing.pincode || 'Not specified'}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="label">City</span>
-                        <span class="value">${listing.city}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="label">Phone Number</span>
-                        <span class="value">N/A</span>
+                    <div class="listing-detail-info">
+                        <h2>${listing.title ? toTitleCase(listing.title) : 'No Title'}</h2>
+                        <div class="detail-row">
+                            <span class="label">Category</span>
+                            <span class="value">${listing.category ? toTitleCase(listing.category) : 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Description</span>
+                            <span class="value description">${listing.description || 'No description available'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Quantity</span>
+                            <span class="value">${listing.quantity ? `${listing.quantity} kg` : 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Price</span>
+                            <span class="value">${listing.price ? `₹${listing.price}` : 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">City</span>
+                            <span class="value">${listing.city || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Status</span>
+                            <span class="value">${listing.status ? toTitleCase(listing.status) : 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Posted By</span>
+                            <span class="value">${listing.user && listing.user.name ? toTitleCase(listing.user.name) : 'Unknown'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Posted On</span>
+                            <span class="value">${listing.createdAt ? new Date(listing.createdAt).toLocaleDateString() : 'N/A'}</span>
+                        </div>
+                        ${listing.status === 'available' ? `
+                            <div class="action-buttons">
+                                <button class="btn primary-btn" onclick="showPickupPopup('${listing._id}')">Schedule Pickup</button>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             </div>
         `;
         
-        modal.style.display = 'block';
+        document.body.appendChild(modal);
 
-        // Add event listener to close button
-        const closeButton = modalContent.querySelector('.close-modal');
-        closeButton.addEventListener('click', () => {
-            modal.style.display = 'none';
+        // Close popup when clicking the close button
+        modal.querySelector('.close-btn').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        // Close popup when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
         });
     })
     .catch(error => {
+        // Remove loading modal if it exists
+        loadingModal.remove();
+        
         console.error('Error fetching listing details:', error);
-        alert('Failed to load listing details. Please try again.');
+        // Show error modal
+        const errorModal = document.createElement('div');
+        errorModal.className = 'popup';
+        errorModal.innerHTML = `
+            <div class="popup-content">
+                <span class="close-btn">&times;</span>
+                <div class="error-message">
+                    <h3>Error Loading Details</h3>
+                    <p>Failed to load listing details. Please try again later.</p>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(errorModal);
+
+        // Close error modal when clicking the close button
+        errorModal.querySelector('.close-btn').addEventListener('click', () => {
+            errorModal.remove();
+        });
+
+        // Close error modal when clicking outside
+        errorModal.addEventListener('click', (e) => {
+            if (e.target === errorModal) {
+                errorModal.remove();
+            }
+        });
     });
 }
 

@@ -40,6 +40,16 @@ const listingSchema = new mongoose.Schema({
         enum: ['available', 'sold', 'pending', 'approved', 'in_review', 'rejected'],
         default: 'in_review'
     },
+    pickupDetails: {
+        collectorName: String,
+        phoneNumber: String,
+        pickupDate: Date,
+        pickupTime: String,
+        scheduledBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    },
     createdAt: {
         type: Date,
         default: Date.now
